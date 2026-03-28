@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Acele Kamulaştırma Haritası | Çoklu Taban Harita + Koruma Alanları</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f4f7fa;
+        }
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        .toolbar {
+            background: #1e2a3a;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            z-index: 10;
+        }
+        .title h1 {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+        .title p {
+            margin: 0;
+            font-size: 0.75rem;
+            opacity: 0.8;
+        }
+        .stats {
+            background: #2c3e4e;
+            padding: 5px 12px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+        }
+        .btn {
+            border: none;
+            color: white;
+            padding: 6px 16px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+            font-size: 0.85rem;
+        }
+        .btn-add {
+            background: #2ecc71;
+        }
+        .btn-add:hover {
+            background: #27ae60;
+        }
+        .btn-import {
+            background: #f39c12;
+        }
+        .btn-import:hover {
+            background: #e67e22;
+        }
+        .btn-login {
+            background: #3498db;
+        }
+        .btn-login:hover {
+            background: #2980b9;
+        }
+        .btn-logout {
+            background: #e74c3c;
+        }
+        .btn-logout:hover {
+            background: #c0392b;
+        }
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+        .file-input-wrapper input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            cursor: pointer;
+        }
+        .main-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        #map {
+            flex: 3;
+            height: 100%;
+        }
+        .sidebar {
+            flex: 1;
+            background: white;
+            border-left: 1px solid #ccc;
+            overflow-y: auto;
+            padding: 15px;
+            box-shadow: -2px 0 5px rgba(0,0,0,0.05);
+            min-width: 280px;
+        }
+        .sidebar h3 {
+            margin-top: 0;
+            font-size: 1.2rem;
+            border-bottom: 2px solid #3498db;
+            display: inline-block;
+            padding-bottom: 4px;
+        }
+        .filter-section {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+        }
+        .filter-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .filter-header button {
+            background: #3498db;
+            border: none;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.7rem;
+        }
+        .filter-group {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 6px;
+        }
+        .filter-checkbox {
+            display: flex;
+            align-items: center;
+            font-size: 0.75rem;
+        }
+        .filter-checkbox input {
+            margin-right: 5px;
+            width: 14px;
+            height: 14px;
+        }
+        .filter-checkbox label {
+            cursor: pointer;
+        }
+        .legend {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.8rem;
+            border: 1px solid #ddd;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            margin-right: 8px;
+            border: 1px solid rgba(0,0,0,0.2);
+        }
+        .record-list {
+            max-height: 300px;
+            overflow-y: auto;
+            font-size: 0.8rem;
+        }
+        .record-card {
+            background: #fefefe;
+            border-left: 4px solid #3498db;
+            padding: 8px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            transition: 0.1s;
+        }
+        .record-card:hover {
+            background: #f1f9ff;
+        }
+        .record-title {
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+        .record-meta {
+            font-size: 0.7rem;
+            color: #555;
+            margin-top: 4px;
+        }
+        .btn-delete {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 2px 8px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            float: right;
+            display: inline-block;
+        }
+        .btn-delete:hover {
+            background: #c0392b;
+        }
+        .form-panel {
+            background: #f9f9fc;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            padding: 12px;
+            margin-top: 15px;
+        }
+        .form-panel input, .form-panel select, .form-panel textarea {
+            width: 100%;
+            padding: 6px;
+            margin: 5px 0 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 0.8rem;
+        }
+        .form-panel label {
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+        .form-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .form-actions button {
+            flex: 1;
+            padding: 6px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-submit {
+            background: #3498db;
+            color: white;
+        }
+        .btn-cancel {
+            background: #95a5a6;
+            color: white;
+        }
+        .message {
+            font-size: 0.75rem;
+            margin-top: 5px;
+            color: #e67e22;
+        }
+        .import-feedback {
+            font-size: 0.75rem;
+            margin-top: 8px;
+            color: #27ae60;
+        }
+        .admin-only {
+            transition: 0.2s;
+        }
+        .hidden {
+            display: none !important;
+        }
+        @media (max-width: 768px) {
+            .main-content { flex-direction: column; }
+            .sidebar { max-height: 40%; border-left: none; border-top: 1px solid #ccc; }
+            #map { min-height: 300px; }
+        }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <div class="toolbar">
+        <div class="title">
+            <h1>🏗️ Acele Kamulaştırma Kararları (2025-2026)</h1>
+            <p>Kategori filtreleme | Çoklu taban harita | Koruma alanları</p>
+        </div>
+        <div class="stats" id="statsText">Yükleniyor...</div>
+        <div style="display: flex; gap: 8px;">
+            <div id="adminControls" class="admin-only hidden">
+                <button class="btn btn-add" id="showAddFormBtn">➕ Yeni Karar Ekle</button>
+                <div class="file-input-wrapper" style="display: inline-block;">
+                    <button class="btn btn-import" id="importBtn">📁 JSON/GeoJSON İçe Aktar</button>
+                    <input type="file" id="fileInput" accept=".json,.geojson" style="display: none;" />
+                </div>
+            </div>
+            <button class="btn btn-login" id="loginBtn">🔐 Admin Girişi</button>
+            <button class="btn btn-logout hidden" id="logoutBtn">🚪 Çıkış</button>
+        </div>
+    </div>
+    <div class="main-content">
+        <div id="map"></div>
+        <div class="sidebar">
+            <h3>🔍 Kategori Filtresi</h3>
+            <div class="filter-section">
+                <div class="filter-header">
+                    <span>Kategori seçiniz</span>
+                    <div>
+                        <button id="selectAllBtn">Tümünü Seç</button>
+                        <button id="clearAllBtn">Temizle</button>
+                    </div>
+                </div>
+                <div id="categoryFilters" class="filter-group"></div>
+            </div>
+
+            <h3>📋 Kategori Renkleri</h3>
+            <div class="legend" id="legendContainer"></div>
+            
+            <h3>📌 Kayıt Listesi</h3>
+            <div id="recordList" class="record-list">Liste yükleniyor...</div>
+
+            <div id="addFormContainer" class="admin-only hidden">
+                <div class="form-panel">
+                    <h4>➕ Yeni Kamulaştırma Ekle</h4>
+                    <label>Proje Adı *</label>
+                    <input type="text" id="projeAdi" placeholder="Proje adı...">
+                    <label>Karar Sayısı (benzersiz) *</label>
+                    <input type="text" id="kararSayisi" placeholder="Örn: 11111">
+                    <label>Tarih (GG.AA.YYYY)</label>
+                    <input type="text" id="tarih" placeholder="27.03.2026">
+                    <label>Resmî Gazete No</label>
+                    <input type="text" id="rgNo" placeholder="33206">
+                    <label>Kamulaştıran Kurum</label>
+                    <input type="text" id="kurum" placeholder="Kurum adı">
+                    <label>Tahmini Konum (İl/İlçe)</label>
+                    <input type="text" id="tahminiKonum" placeholder="Ankara, İstanbul...">
+                    <label>Koordinat (Enlem, Boylam) *</label>
+                    <input type="text" id="coord" placeholder="Örn: 39.9334, 32.8597">
+                    <label>Kategori (manuel seçim)</label>
+                    <select id="kategoriSelect">
+                        <option value="Konut">🏠 Konut</option>
+                        <option value="Altyapı">💧 Altyapı</option>
+                        <option value="Ulaşım">🚆 Ulaşım</option>
+                        <option value="Enerji">⚡ Enerji</option>
+                        <option value="Kentsel Dönüşüm">🏙️ Kentsel Dönüşüm</option>
+                        <option value="Maden / Petrol">⛏️ Maden / Petrol</option>
+                        <option value="Kıyılar">🏖️ Kıyılar</option>
+                        <option value="Orman Alanları">🌲 Orman Alanları</option>
+                        <option value="Tarihi Sit Alanları">🏛️ Tarihi Sit Alanları</option>
+                        <option value="Diğer">📌 Diğer</option>
+                    </select>
+                    <div class="form-actions">
+                        <button class="btn-submit" id="saveRecordBtn">Kaydet</button>
+                        <button class="btn-cancel" id="cancelAddBtn">İptal</button>
+                    </div>
+                    <div id="formMessage" class="message"></div>
+                </div>
+            </div>
+            <div id="importFeedback" class="import-feedback" style="display: none;"></div>
+        </div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    // ------------------- KATEGORİ TANIMLARI VE RENKLER ------------------
+    const CATEGORY_COLORS = {
+        "Konut": "#2ecc71",
+        "Altyapı": "#3498db",
+        "Ulaşım": "#f39c12",
+        "Enerji": "#e67e22",
+        "Kentsel Dönüşüm": "#9b59b6",
+        "Maden / Petrol": "#95a5a6",
+        "Kıyılar": "#1abc9c",
+        "Orman Alanları": "#27ae60",
+        "Tarihi Sit Alanları": "#d35400",
+        "Diğer": "#7f8c8d"
+    };
+    const CATEGORIES = Object.keys(CATEGORY_COLORS);
+    
+    // Otomatik kategori belirleme (genişletilmiş)
+    function determineCategory(projeAdi) {
+        if (!projeAdi) return "Diğer";
+        const text = projeAdi.toLowerCase();
+        if (text.includes("kıyı") || text.includes("sahil") || text.includes("kıyı şeridi") || text.includes("plaj") || text.includes("deniz")) return "Kıyılar";
+        if (text.includes("orman") || text.includes("ağaçlandırma") || text.includes("ağaç") || text.includes("fidan") || text.includes("yeşil alan") || text.includes("koru")) return "Orman Alanları";
+        if (text.includes("sit alanı") || text.includes("arkeolojik") || text.includes("antik") || text.includes("tarihi") || text.includes("ören yeri") || text.includes("kültür varlığı") || text.includes("anıt") || text.includes("kale")) return "Tarihi Sit Alanları";
+        if (text.includes("konut") || text.includes("tokİ") || text.includes("sosyal konut") || text.includes("toplu konut")) return "Konut";
+        if (text.includes("içmesuyu") || text.includes("kanalizasyon") || text.includes("su temini") || text.includes("atık su") || text.includes("isale hattı") || text.includes("arıtma") || text.includes("sulama") || text.includes("içme suyu")) return "Altyapı";
+        if (text.includes("yol") || text.includes("demiryolu") || text.includes("raylı sistem") || text.includes("otoyol") || text.includes("bağlantı yolu") || text.includes("köprü") || text.includes("tünel") || text.includes("devlet yolu") || text.includes("çevre yolu")) return "Ulaşım";
+        if (text.includes("enerji") || text.includes("iletim") || text.includes("nakil hattı") || text.includes("ges") || text.includes("res") || text.includes("hes") || text.includes("jes") || text.includes("tm") || text.includes("trafo") || text.includes("doğal gaz") || text.includes("boru hattı") || text.includes("elektrik") || text.includes("transformatör")) return "Enerji";
+        if (text.includes("kentsel dönüşüm") || text.includes("riskli alan") || text.includes("rezerv yapı") || text.includes("afet")) return "Kentsel Dönüşüm";
+        if (text.includes("maden") || text.includes("petrol") || text.includes("linyit") || text.includes("jeotermal") || text.includes("taş ocağı") || text.includes("maden ruhsat")) return "Maden / Petrol";
+        return "Diğer";
+    }
+    
+    // ---------- ADMIN AUTH ----------
+    const ADMIN_PASSWORD = "admin123";
+    let isAdmin = false;
+    function checkAdminStatus() {
+        isAdmin = localStorage.getItem("kamulastirma_admin") === "true";
+        updateAdminUI();
+    }
+    function login() {
+        const pwd = prompt("Yönetici şifresini giriniz:");
+        if (pwd === ADMIN_PASSWORD) {
+            isAdmin = true;
+            localStorage.setItem("kamulastirma_admin", "true");
+            updateAdminUI();
+            alert("Admin girişi başarılı.");
+        } else {
+            alert("Hatalı şifre!");
+        }
+    }
+    function logout() {
+        isAdmin = false;
+        localStorage.removeItem("kamulastirma_admin");
+        updateAdminUI();
+        alert("Çıkış yapıldı.");
+        hideAddForm();
+    }
+    function updateAdminUI() {
+        const adminElements = document.querySelectorAll('.admin-only');
+        if (isAdmin) {
+            adminElements.forEach(el => el.classList.remove('hidden'));
+            document.getElementById('loginBtn').classList.add('hidden');
+            document.getElementById('logoutBtn').classList.remove('hidden');
+        } else {
+            adminElements.forEach(el => el.classList.add('hidden'));
+            document.getElementById('loginBtn').classList.remove('hidden');
+            document.getElementById('logoutBtn').classList.add('hidden');
+            hideAddForm();
+        }
+        refreshFilteredData(); // Silme butonlarını yenilemek için
+    }
+    
+    // ---------- VERİ YÖNETİMİ ----------
+    let kamulastirmaData = [];     // tüm kayıtlar
+    let selectedCategories = new Set(CATEGORIES); // varsayılan tümü seçili
+    let map, currentMarkers = [];
+    
+    function saveToLocalStorage() {
+        localStorage.setItem("aceleKamulastirmaData", JSON.stringify(kamulastirmaData));
+    }
+    
+    function addNewRecord(record) {
+        const exists = kamulastirmaData.some(r => r.karar_sayisi === record.karar_sayisi);
+        if (exists) return { success: false, message: "Bu karar sayısı zaten mevcut! (dublikat engellendi)" };
+        kamulastirmaData.push(record);
+        saveToLocalStorage();
+        refreshFilteredData();
+        return { success: true, message: "Kayıt başarıyla eklendi." };
+    }
+    
+    function deleteRecord(indexInOriginal) {
+        if (!isAdmin) {
+            alert("Bu işlem için admin girişi gereklidir.");
+            return;
+        }
+        if (indexInOriginal >= 0 && indexInOriginal < kamulastirmaData.length) {
+            kamulastirmaData.splice(indexInOriginal, 1);
+            saveToLocalStorage();
+            refreshFilteredData();
+        }
+    }
+    
+    // Filtrelenmiş veri (seçili kategorilere göre)
+    function getFilteredData() {
+        return kamulastirmaData.filter(rec => selectedCategories.has(rec.kategori));
+    }
+    
+    // Harita güncelleme (filtrelenmiş veriyi kullan)
+    function updateMap() {
+        if (!map) return;
+        currentMarkers.forEach(m => map.removeLayer(m));
+        currentMarkers = [];
+        const filtered = getFilteredData();
+        for (let i = 0; i < filtered.length; i++) {
+            const r = filtered[i];
+            if (!r.coordinates || r.coordinates.length !== 2) continue;
+            const lat = r.coordinates[1];
+            const lng = r.coordinates[0];
+            const color = CATEGORY_COLORS[r.kategori];
+            const originalIndex = kamulastirmaData.findIndex(orig => orig.id === r.id);
+            let popupHtml = `
+                <b>${r.proje_adi.substring(0, 100)}</b><br>
+                <b>Karar No:</b> ${r.karar_sayisi}<br>
+                <b>Tarih:</b> ${r.tarih}<br>
+                <b>Kurum:</b> ${r.kamulastiran_kurum}<br>
+                <b>Konum:</b> ${r.tahmini_konum}<br>
+                <b>Kategori:</b> <span style="color:${color}">${r.kategori}</span><br>
+            `;
+            if (isAdmin) {
+                popupHtml += `<button class="delete-popup-btn" data-idx="${originalIndex}" style="background:#e74c3c;color:white;border:none;border-radius:4px;padding:2px 8px;margin-top:5px;cursor:pointer;">🗑️ Sil</button>`;
+            }
+            const marker = L.circleMarker([lat, lng], {
+                radius: 7,
+                fillColor: color,
+                color: "#2c3e50",
+                weight: 1,
+                opacity: 0.9,
+                fillOpacity: 0.85
+            }).bindPopup(popupHtml);
+            if (isAdmin) {
+                marker.on('popupopen', () => {
+                    const btn = document.querySelector('.delete-popup-btn');
+                    if (btn) {
+                        btn.onclick = (e) => {
+                            const idx = parseInt(btn.getAttribute('data-idx'));
+                            if (!isNaN(idx)) deleteRecord(idx);
+                            map.closePopup();
+                        };
+                    }
+                });
+            }
+            marker.addTo(map);
+            currentMarkers.push(marker);
+        }
+        if (currentMarkers.length) {
+            const bounds = L.latLngBounds(currentMarkers.map(m => m.getLatLng()));
+            map.fitBounds(bounds, { padding: [40, 40] });
+        }
+        const total = kamulastirmaData.length;
+        const filteredCount = filtered.length;
+        document.getElementById('statsText').innerHTML = `📌 Gösterilen: ${filteredCount} / ${total} karar`;
+    }
+    
+    // Kayıt listesini güncelle (filtrelenmiş)
+    function updateSidebarList() {
+        const container = document.getElementById('recordList');
+        if (!container) return;
+        const filtered = getFilteredData();
+        if (filtered.length === 0) {
+            container.innerHTML = '<div>Seçili kategoride kayıt yok.</div>';
+            return;
+        }
+        let html = '';
+        filtered.forEach((rec) => {
+            const color = CATEGORY_COLORS[rec.kategori];
+            const originalIndex = kamulastirmaData.findIndex(orig => orig.id === rec.id);
+            let deleteButton = '';
+            if (isAdmin) {
+                deleteButton = `<button class="btn-delete" data-idx="${originalIndex}">Sil</button>`;
+            }
+            html += `
+                <div class="record-card" style="border-left-color: ${color}">
+                    ${deleteButton}
+                    <div class="record-title">${rec.proje_adi.substring(0, 70)}${rec.proje_adi.length > 70 ? '…' : ''}</div>
+                    <div class="record-meta">
+                        ${rec.karar_sayisi} | ${rec.tarih} | ${rec.tahmini_konum}<br>
+                        <span style="color:${color}; font-weight:bold;">${rec.kategori}</span> | ${rec.kamulastiran_kurum.substring(0, 40)}
+                    </div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+        if (isAdmin) {
+            document.querySelectorAll('.btn-delete').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const idx = parseInt(btn.getAttribute('data-idx'));
+                    if (confirm('Bu kaydı silmek istediğinize emin misiniz?')) {
+                        deleteRecord(idx);
+                    }
+                });
+            });
+        }
+    }
+    
+    // Lejant oluştur
+    function buildLegend() {
+        const legendDiv = document.getElementById('legendContainer');
+        let html = '';
+        for (const [cat, color] of Object.entries(CATEGORY_COLORS)) {
+            html += `<div class="legend-item"><div class="legend-color" style="background:${color};"></div><span>${cat}</span></div>`;
+        }
+        legendDiv.innerHTML = html;
+    }
+    
+    // Filtreleme kontrolünü oluştur
+    function buildFilterCheckboxes() {
+        const container = document.getElementById('categoryFilters');
+        if (!container) return;
+        container.innerHTML = '';
+        CATEGORIES.forEach(cat => {
+            const div = document.createElement('div');
+            div.className = 'filter-checkbox';
+            const cb = document.createElement('input');
+            cb.type = 'checkbox';
+            cb.id = `filter_${cat}`;
+            cb.value = cat;
+            cb.checked = selectedCategories.has(cat);
+            cb.addEventListener('change', () => {
+                if (cb.checked) selectedCategories.add(cat);
+                else selectedCategories.delete(cat);
+                refreshFilteredData();
+            });
+            const label = document.createElement('label');
+            label.htmlFor = `filter_${cat}`;
+            label.textContent = cat;
+            div.appendChild(cb);
+            div.appendChild(label);
+            container.appendChild(div);
+        });
+    }
+    
+    function selectAllCategories() {
+        CATEGORIES.forEach(cat => selectedCategories.add(cat));
+        updateCheckboxStates();
+        refreshFilteredData();
+    }
+    
+    function clearAllCategories() {
+        selectedCategories.clear();
+        updateCheckboxStates();
+        refreshFilteredData();
+    }
+    
+    function updateCheckboxStates() {
+        CATEGORIES.forEach(cat => {
+            const cb = document.getElementById(`filter_${cat}`);
+            if (cb) cb.checked = selectedCategories.has(cat);
+        });
+    }
+    
+    function refreshFilteredData() {
+        updateMap();
+        updateSidebarList();
+    }
+    
+    // ---------- DOSYA İÇE AKTARMA ----------
+    function parseImportedData(data) {
+        let features = [];
+        if (data.type === "FeatureCollection" && Array.isArray(data.features)) {
+            features = data.features;
+        } else if (Array.isArray(data)) {
+            features = data.map(item => {
+                if (!item.geometry && item.coordinates && Array.isArray(item.coordinates)) {
+                    return {
+                        type: "Feature",
+                        geometry: { type: "Point", coordinates: item.coordinates },
+                        properties: item
+                    };
+                }
+                return item;
+            });
+        } else {
+            throw new Error("Dosya formatı desteklenmiyor: FeatureCollection veya dizi olmalı.");
+        }
+        
+        const records = [];
+        for (const feat of features) {
+            if (!feat.geometry || !feat.geometry.coordinates) continue;
+            const props = feat.properties || {};
+            const projeAdi = props.proje_adi || props.projeAdi || "Proje adı yok";
+            const kararSayisi = props.karar_sayisi || props.kararSayisi || `import_${Date.now()}_${Math.random()}`;
+            const coordinates = feat.geometry.coordinates;
+            const record = {
+                id: kararSayisi + "_" + Date.now() + Math.random(),
+                proje_adi: projeAdi,
+                karar_sayisi: kararSayisi,
+                tarih: props.tarih || props.tarih || "-",
+                resmi_gazete_sayisi: props.resmi_gazete_sayisi || props.resmiGazeteSayisi || "-",
+                kamulastiran_kurum: props.kamulastiran_kurum || props.kamulastiranKurum || "-",
+                tahmini_konum: props.tahmini_konum || props.tahminiKonum || "Belirtilmemiş",
+                coordinates: coordinates,
+                kategori: determineCategory(projeAdi)
+            };
+            records.push(record);
+        }
+        return records;
+    }
+    
+    async function importFromFile(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const json = JSON.parse(e.target.result);
+                    const newRecords = parseImportedData(json);
+                    resolve(newRecords);
+                } catch (err) {
+                    reject(err);
+                }
+            };
+            reader.onerror = () => reject(new Error("Dosya okunamadı"));
+            reader.readAsText(file);
+        });
+    }
+    
+    async function handleImport(file) {
+        if (!isAdmin) {
+            alert("Bu işlem için admin girişi gereklidir.");
+            return;
+        }
+        try {
+            const newRecords = await importFromFile(file);
+            let added = 0;
+            let skipped = 0;
+            for (const rec of newRecords) {
+                const result = addNewRecord(rec);
+                if (result.success) added++;
+                else skipped++;
+            }
+            refreshFilteredData();
+            const feedback = document.getElementById('importFeedback');
+            feedback.style.display = 'block';
+            feedback.innerHTML = `✅ İçe aktarma tamamlandı: ${added} yeni kayıt eklendi, ${skipped} kayıt (dublikat) atlandı.`;
+            setTimeout(() => { feedback.style.display = 'none'; }, 5000);
+        } catch (err) {
+            alert("Hata: " + err.message);
+        }
+    }
+    
+    // ---------- VARSYILAN VERİ ----------
+    async function loadDefaultData() {
+        try {
+            const response = await fetch('acele_kamulastirma.geojson');
+            if (!response.ok) throw new Error();
+            const geojson = await response.json();
+            return parseImportedData(geojson);
+        } catch (e) {
+            console.warn("GeoJSON dosyası bulunamadı, demo veri kullanılıyor.");
+            return [
+                { proje_adi: "Kuşadası-Söke İçmesuyu Projesi", karar_sayisi: "11111", tarih: "27.03.2026", resmi_gazete_sayisi: "33206", kamulastiran_kurum: "DSİ", tahmini_konum: "Kuşadası", coordinates: [27.2586, 37.8579], kategori: "Altyapı", id: "11111" },
+                { proje_adi: "Bursa-Emek-Şehir Hastanesi Hafif Raylı Sistem", karar_sayisi: "11098", tarih: "19.03.2026", resmi_gazete_sayisi: "33201", kamulastiran_kurum: "Ulaştırma Bakanlığı", tahmini_konum: "Bursa", coordinates: [29.0609, 40.1833], kategori: "Ulaşım", id: "11098" },
+                { proje_adi: "154 kV Hitit TM Enerji İletim Hattı", karar_sayisi: "11113", tarih: "27.03.2026", resmi_gazete_sayisi: "33206", kamulastiran_kurum: "TEİAŞ", tahmini_konum: "Çorum", coordinates: [34.9556, 40.5499], kategori: "Enerji", id: "11113" },
+                { proje_adi: "Yüksekova Sulaması Projesi", karar_sayisi: "11078", tarih: "17.03.2026", resmi_gazete_sayisi: "33199", kamulastiran_kurum: "DSİ", tahmini_konum: "Hakkari", coordinates: [43.7412, 37.5744], kategori: "Altyapı", id: "11078" },
+                { proje_adi: "Şanlıurfa Kentsel Dönüşüm Projesi", karar_sayisi: "10965", tarih: "27.02.2026", resmi_gazete_sayisi: "33181", kamulastiran_kurum: "Şanlıurfa BB", tahmini_konum: "Şanlıurfa", coordinates: [38.7939, 37.1674], kategori: "Kentsel Dönüşüm", id: "10965" },
+                { proje_adi: "Türkiye Petrolleri Gabar Sahası", karar_sayisi: "10772", tarih: "25.12.2025", resmi_gazete_sayisi: "33118", kamulastiran_kurum: "MAPEG", tahmini_konum: "İdil", coordinates: [42.1333, 37.3333], kategori: "Maden / Petrol", id: "10772" },
+                { proje_adi: "Antalya Kıyı Şeridi Düzenleme Projesi", karar_sayisi: "99999", tarih: "15.03.2026", resmi_gazete_sayisi: "33190", kamulastiran_kurum: "Çevre Şehircilik Bakanlığı", tahmini_konum: "Antalya", coordinates: [30.7133, 36.8969], kategori: "Kıyılar", id: "99999" },
+                { proje_adi: "Bolkar Dağları Orman Rehabilitasyonu", karar_sayisi: "88888", tarih: "10.02.2026", resmi_gazete_sayisi: "33170", kamulastiran_kurum: "Orman Genel Müdürlüğü", tahmini_konum: "Niğde", coordinates: [34.6794, 37.9667], kategori: "Orman Alanları", id: "88888" },
+                { proje_adi: "Efes Antik Kenti Çevre Düzenlemesi", karar_sayisi: "77777", tarih: "05.01.2026", resmi_gazete_sayisi: "33150", kamulastiran_kurum: "Kültür ve Turizm Bakanlığı", tahmini_konum: "Selçuk", coordinates: [27.3400, 37.9400], kategori: "Tarihi Sit Alanları", id: "77777" }
+            ];
+        }
+    }
+    
+    // ---------- FORM (TEK TEK EKLEME) ----------
+    function showAddForm() {
+        if (!isAdmin) return;
+        document.getElementById('addFormContainer').classList.remove('hidden');
+    }
+    function hideAddForm() {
+        document.getElementById('addFormContainer').classList.add('hidden');
+        document.getElementById('formMessage').innerHTML = '';
+        document.getElementById('projeAdi').value = '';
+        document.getElementById('kararSayisi').value = '';
+        document.getElementById('tarih').value = '';
+        document.getElementById('rgNo').value = '';
+        document.getElementById('kurum').value = '';
+        document.getElementById('tahminiKonum').value = '';
+        document.getElementById('coord').value = '';
+        document.getElementById('kategoriSelect').value = 'Diğer';
+    }
+    
+    function addNewRecordFromForm() {
+        if (!isAdmin) return;
+        const projeAdi = document.getElementById('projeAdi').value.trim();
+        const kararSayisi = document.getElementById('kararSayisi').value.trim();
+        const tarih = document.getElementById('tarih').value.trim() || '-';
+        const rgNo = document.getElementById('rgNo').value.trim() || '-';
+        const kurum = document.getElementById('kurum').value.trim() || 'Belirtilmemiş';
+        const tahminiKonum = document.getElementById('tahminiKonum').value.trim() || 'Belirtilmemiş';
+        const coordStr = document.getElementById('coord').value.trim();
+        const kategoriManuel = document.getElementById('kategoriSelect').value;
+        
+        if (!projeAdi || !kararSayisi || !coordStr) {
+            document.getElementById('formMessage').innerHTML = '❌ Proje adı, karar sayısı ve koordinat (enlem,boylam) zorunludur.';
+            return;
+        }
+        let parts = coordStr.split(',');
+        if (parts.length !== 2) {
+            document.getElementById('formMessage').innerHTML = '❌ Koordinat formatı: enlem,boylam (örn: 39.9334,32.8597)';
+            return;
+        }
+        let lat = parseFloat(parts[0].trim());
+        let lng = parseFloat(parts[1].trim());
+        if (isNaN(lat) || isNaN(lng) || lat < 36 || lat > 42 || lng < 26 || lng > 45) {
+            document.getElementById('formMessage').innerHTML = '❌ Geçerli Türkiye koordinatları giriniz (yaklaşık 36-42 enlem, 26-45 boylam).';
+            return;
+        }
+        const newRecord = {
+            id: kararSayisi + "_" + Date.now(),
+            proje_adi: projeAdi,
+            karar_sayisi: kararSayisi,
+            tarih: tarih,
+            resmi_gazete_sayisi: rgNo,
+            kamulastiran_kurum: kurum,
+            tahmini_konum: tahminiKonum,
+            coordinates: [lng, lat],
+            kategori: kategoriManuel
+        };
+        const result = addNewRecord(newRecord);
+        if (result.success) {
+            hideAddForm();
+            refreshFilteredData();
+            alert(result.message);
+        } else {
+            document.getElementById('formMessage').innerHTML = `❌ ${result.message}`;
+        }
+    }
+    
+    // ---------- HARİTA KATMANLARI ----------
+    function initMap() {
+        // Taban harita katmanları
+        const osmStandard = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 19
+        });
+        
+        const osmHumanitarian = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Tiles style by Humanitarian OpenStreetMap Team',
+            maxZoom: 19
+        });
+        
+        const esriSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+            maxZoom: 19
+        });
+        
+        // Koruma alanları örneği: Göreme Milli Parkı sınırları (yaklaşık çokgen)
+        const protectedArea = L.geoJSON({
+            "type": "Feature",
+            "properties": { name: "Göreme Milli Parkı (Örnek)" },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [[
+                    [34.835, 38.665], [34.850, 38.665], [34.865, 38.658], [34.870, 38.645],
+                    [34.860, 38.632], [34.842, 38.630], [34.828, 38.635], [34.820, 38.645],
+                    [34.825, 38.655], [34.835, 38.665]
+                ]]
+            }
+        }, {
+            style: { color: "#ff7800", weight: 2, fillColor: "#ff7800", fillOpacity: 0.2 },
+            attribution: "Örnek koruma alanı - Gerçek veri değildir"
+        });
+        
+        // Katman kontrolü
+        const baseLayers = {
+            "OSM Standart": osmStandard,
+            "OSM Humanitarian": osmHumanitarian,
+            "ESRI Uydu": esriSatellite
+        };
+        
+        const overlays = {
+            "🌲 Koruma Alanları (örnek)": protectedArea
+        };
+        
+        // Haritayı oluştur, varsayılan olarak OSM Standart
+        map = L.map('map', {
+            layers: [osmStandard]
+        }).setView([39.0, 35.0], 6);
+        
+        L.control.layers(baseLayers, overlays).addTo(map);
+    }
+    
+    // ---------- BAŞLATMA ----------
+    async function init() {
+        initMap();  // Haritayı ve katmanları başlat
+        
+        const stored = localStorage.getItem('aceleKamulastirmaData');
+        if (stored) {
+            kamulastirmaData = JSON.parse(stored);
+        } else {
+            kamulastirmaData = await loadDefaultData();
+            saveToLocalStorage();
+        }
+        
+        buildFilterCheckboxes();
+        buildLegend();
+        checkAdminStatus();
+        refreshFilteredData();
+        
+        // Event listeners
+        document.getElementById('loginBtn').addEventListener('click', login);
+        document.getElementById('logoutBtn').addEventListener('click', logout);
+        document.getElementById('showAddFormBtn').addEventListener('click', showAddForm);
+        document.getElementById('cancelAddBtn').addEventListener('click', hideAddForm);
+        document.getElementById('saveRecordBtn').addEventListener('click', addNewRecordFromForm);
+        document.getElementById('selectAllBtn').addEventListener('click', selectAllCategories);
+        document.getElementById('clearAllBtn').addEventListener('click', clearAllCategories);
+        
+        const importBtn = document.getElementById('importBtn');
+        const fileInput = document.getElementById('fileInput');
+        if (importBtn && fileInput) {
+            importBtn.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length) {
+                    handleImport(e.target.files[0]);
+                    fileInput.value = '';
+                }
+            });
+        }
+    }
+    
+    init();
+</script>
+</body>
+</html>
