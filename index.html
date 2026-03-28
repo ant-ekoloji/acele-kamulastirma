@@ -5,11 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Acele Kamulaştırma Haritası | Firebase Tabanlı</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
-        /* Aynı CSS kodu (önceki sürümle aynı) */
+        /* (Aynı CSS, uzunluk nedeniyle kısaltılmıştır - orijinal stil korunacak) */
         * { box-sizing: border-box; }
         body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7fa; }
         .app-container { display: flex; flex-direction: column; height: 100vh; }
@@ -22,6 +21,8 @@
         .btn-add:hover { background: #27ae60; }
         .btn-import { background: #f39c12; }
         .btn-import:hover { background: #e67e22; }
+        .btn-restore { background: #9b59b6; }
+        .btn-restore:hover { background: #8e44ad; }
         .btn-login { background: #3498db; }
         .btn-login:hover { background: #2980b9; }
         .btn-logout { background: #e74c3c; }
@@ -47,14 +48,14 @@
         .record-meta { font-size: 0.7rem; color: #555; margin-top: 4px; }
         .btn-delete { background: #e74c3c; color: white; border: none; border-radius: 4px; padding: 2px 8px; font-size: 0.7rem; cursor: pointer; float: right; }
         .form-panel { background: #f9f9fc; border: 1px solid #ddd; border-radius: 12px; padding: 12px; margin-top: 15px; }
-        .form-panel input, .form-panel select, .form-panel textarea { width: 100%; padding: 6px; margin: 5px 0 10px 0; border: 1px solid #ccc; border-radius: 6px; font-size: 0.8rem; }
+        .form-panel input, .form-panel select { width: 100%; padding: 6px; margin: 5px 0 10px 0; border: 1px solid #ccc; border-radius: 6px; font-size: 0.8rem; }
         .form-panel label { font-weight: 600; font-size: 0.8rem; }
         .form-actions { display: flex; gap: 8px; margin-top: 8px; }
         .form-actions button { flex: 1; padding: 6px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
         .btn-submit { background: #3498db; color: white; }
         .btn-cancel { background: #95a5a6; color: white; }
         .message { font-size: 0.75rem; margin-top: 5px; color: #e67e22; }
-        .import-feedback { font-size: 0.75rem; margin-top: 8px; color: #27ae60; }
+        .import-feedback, .restore-feedback { font-size: 0.75rem; margin-top: 8px; color: #27ae60; }
         .admin-only { transition: 0.2s; }
         .hidden { display: none !important; }
         @media (max-width: 768px) { .main-content { flex-direction: column; } .sidebar { max-height: 40%; border-left: none; border-top: 1px solid #ccc; } #map { min-height: 300px; } }
@@ -75,6 +76,7 @@
                     <button class="btn btn-import" id="importBtn">📁 JSON/GeoJSON İçe Aktar</button>
                     <input type="file" id="fileInput" accept=".json,.geojson" style="display: none;" />
                 </div>
+                <button class="btn btn-restore" id="restoreLocalBtn">💾 Yerel Verileri Geri Yükle</button>
             </div>
             <button class="btn btn-login" id="loginBtn">🔐 Admin Girişi</button>
             <button class="btn btn-logout hidden" id="logoutBtn">🚪 Çıkış</button>
@@ -125,6 +127,7 @@
                 </div>
             </div>
             <div id="importFeedback" class="import-feedback" style="display: none;"></div>
+            <div id="restoreFeedback" class="restore-feedback" style="display: none;"></div>
         </div>
     </div>
 </div>
@@ -133,31 +136,22 @@
 <script>
     // ---------- FIREBASE YAPILANDIRMASI ----------
     // 🔥 AŞAĞIDAKİ FIREBASE CONFIG BİLGİLERİNİ KENDİ PROJENİZLE DEĞİŞTİRİN 🔥
-   const firebaseConfig = {
-
+    const firebaseConfig = {
   apiKey: "AIzaSyCfrZFOzg_an5WBFARS_1cB4Q3pfRguz8E",
-
   authDomain: "acele-kumulastirma.firebaseapp.com",
-
   databaseURL: "https://acele-kumulastirma-default-rtdb.europe-west1.firebasedatabase.app",
-
   projectId: "acele-kumulastirma",
-
   storageBucket: "acele-kumulastirma.firebasestorage.app",
-
   messagingSenderId: "935988668675",
-
   appId: "1:935988668675:web:c934a82fbfafc7f5512136",
-
   measurementId: "G-6C70TNVSGZ"
-
 };
 
     
     // Firebase'i başlat
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
-    const recordsRef = database.ref("kamulastirma"); // verilerin saklanacağı anahtar
+    const recordsRef = database.ref("kamulastirma");
     
     // ---------- KATEGORİ TANIMLARI ----------
     const CATEGORY_COLORS = {
@@ -193,11 +187,11 @@
         document.getElementById('loginBtn').classList.toggle('hidden', isAdmin);
         document.getElementById('logoutBtn').classList.toggle('hidden', !isAdmin);
         if (!isAdmin) hideAddForm();
-        refreshFilteredData(); // silme butonlarını yenile
+        refreshFilteredData();
     }
     
     // ---------- VERİ YÖNETİMİ (FIREBASE) ----------
-    let kamulastirmaData = [];      // yerel kopya
+    let kamulastirmaData = [];
     let selectedCategories = new Set(CATEGORIES);
     let map, currentMarkers = [];
     
@@ -206,24 +200,46 @@
         recordsRef.on('value', (snapshot) => {
             const data = snapshot.val();
             if (data) {
-                // Firebase'den gelen veriyi diziye dönüştür
-                const newData = Object.entries(data).map(([key, value]) => ({ ...value, firebaseKey: key }));
-                kamulastirmaData = newData;
+                kamulastirmaData = Object.entries(data).map(([key, value]) => ({ ...value, firebaseKey: key }));
             } else {
                 kamulastirmaData = [];
+                // Veritabanı boşsa demo verileri ekle
+                insertDemoDataIfEmpty();
             }
             refreshFilteredData();
+        }, (error) => {
+            console.error("Firebase hatası:", error);
+            alert("Firebase bağlantı hatası! Lütfen kuralları kontrol edin.");
         });
+    }
+    
+    // Demo verileri ekle (sadece veritabanı tamamen boşsa)
+    async function insertDemoDataIfEmpty() {
+        const snapshot = await recordsRef.once('value');
+        if (snapshot.exists()) return;
+        
+        const demoRecords = [
+            { proje_adi: "Kuşadası-Söke İçmesuyu Projesi", karar_sayisi: "11111", tarih: "27.03.2026", resmi_gazete_sayisi: "33206", kamulastiran_kurum: "DSİ", tahmini_konum: "Kuşadası", coordinates: [27.2586, 37.8579], kategori: "Altyapı" },
+            { proje_adi: "Bursa-Emek-Şehir Hastanesi Hafif Raylı Sistem", karar_sayisi: "11098", tarih: "19.03.2026", resmi_gazete_sayisi: "33201", kamulastiran_kurum: "Ulaştırma Bakanlığı", tahmini_konum: "Bursa", coordinates: [29.0609, 40.1833], kategori: "Ulaşım" },
+            { proje_adi: "154 kV Hitit TM Enerji İletim Hattı", karar_sayisi: "11113", tarih: "27.03.2026", resmi_gazete_sayisi: "33206", kamulastiran_kurum: "TEİAŞ", tahmini_konum: "Çorum", coordinates: [34.9556, 40.5499], kategori: "Enerji" },
+            { proje_adi: "Yüksekova Sulaması Projesi", karar_sayisi: "11078", tarih: "17.03.2026", resmi_gazete_sayisi: "33199", kamulastiran_kurum: "DSİ", tahmini_konum: "Hakkari", coordinates: [43.7412, 37.5744], kategori: "Altyapı" },
+            { proje_adi: "Şanlıurfa Kentsel Dönüşüm Projesi", karar_sayisi: "10965", tarih: "27.02.2026", resmi_gazete_sayisi: "33181", kamulastiran_kurum: "Şanlıurfa BB", tahmini_konum: "Şanlıurfa", coordinates: [38.7939, 37.1674], kategori: "Kentsel Dönüşüm" },
+            { proje_adi: "Antalya Kıyı Şeridi Düzenleme Projesi", karar_sayisi: "99999", tarih: "15.03.2026", resmi_gazete_sayisi: "33190", kamulastiran_kurum: "Çevre Bakanlığı", tahmini_konum: "Antalya", coordinates: [30.7133, 36.8969], kategori: "Kıyılar" },
+            { proje_adi: "Bolkar Dağları Orman Rehabilitasyonu", karar_sayisi: "88888", tarih: "10.02.2026", resmi_gazete_sayisi: "33170", kamulastiran_kurum: "Orman Genel Müdürlüğü", tahmini_konum: "Niğde", coordinates: [34.6794, 37.9667], kategori: "Orman Alanları" },
+            { proje_adi: "Efes Antik Kenti Çevre Düzenlemesi", karar_sayisi: "77777", tarih: "05.01.2026", resmi_gazete_sayisi: "33150", kamulastiran_kurum: "Kültür Bakanlığı", tahmini_konum: "Selçuk", coordinates: [27.3400, 37.9400], kategori: "Tarihi Sit Alanları" }
+        ];
+        for (const rec of demoRecords) {
+            await recordsRef.push(rec);
+        }
+        console.log("Demo veriler eklendi.");
     }
     
     // Yeni kayıt ekleme (Firebase)
     async function addNewRecord(record) {
-        // Benzersizlik kontrolü (karar sayısı)
         const exists = kamulastirmaData.some(r => r.karar_sayisi === record.karar_sayisi);
         if (exists) return { success: false, message: "Bu karar sayısı zaten mevcut!" };
         try {
-            const newRef = recordsRef.push();
-            await newRef.set(record);
+            await recordsRef.push(record);
             return { success: true, message: "Kayıt başarıyla eklendi." };
         } catch (err) {
             return { success: false, message: "Firebase hatası: " + err.message };
@@ -274,7 +290,6 @@
             const bounds = L.latLngBounds(currentMarkers.map(m => m.getLatLng()));
             map.fitBounds(bounds, { padding: [40, 40] });
         } else {
-            // hiç nokta yoksa Türkiye görünümü
             map.fitBounds(L.latLngBounds(L.latLng(36,26), L.latLng(42,45)));
         }
         document.getElementById('statsText').innerHTML = `📌 Gösterilen: ${filtered.length} / ${kamulastirmaData.length} karar`;
@@ -331,6 +346,45 @@
         }
     }
     
+    // ---------- YEREL VERİLERİ FIREBASE'E AKTAR ----------
+    async function restoreLocalData() {
+        if (!isAdmin) { alert("Admin girişi gerekli."); return; }
+        const localData = localStorage.getItem("aceleKamulastirmaData");
+        if (!localData) {
+            alert("Yerel veri bulunamadı.");
+            return;
+        }
+        try {
+            const oldRecords = JSON.parse(localData);
+            let added = 0, skipped = 0;
+            for (const rec of oldRecords) {
+                const exists = kamulastirmaData.some(r => r.karar_sayisi === rec.karar_sayisi);
+                if (exists) skipped++;
+                else {
+                    // Firebase'e uygun formata çevir
+                    const newRec = {
+                        proje_adi: rec.proje_adi,
+                        karar_sayisi: rec.karar_sayisi,
+                        tarih: rec.tarih,
+                        resmi_gazete_sayisi: rec.resmi_gazete_sayisi || "-",
+                        kamulastiran_kurum: rec.kamulastiran_kurum || "-",
+                        tahmini_konum: rec.tahmini_konum || "Belirtilmemiş",
+                        coordinates: rec.coordinates,
+                        kategori: rec.kategori || determineCategory(rec.proje_adi)
+                    };
+                    await recordsRef.push(newRec);
+                    added++;
+                }
+            }
+            const feedback = document.getElementById('restoreFeedback');
+            feedback.style.display = 'block';
+            feedback.innerHTML = `✅ Geri yükleme tamamlandı: ${added} yeni kayıt eklendi, ${skipped} kayıt atlandı.`;
+            setTimeout(() => feedback.style.display = 'none', 5000);
+        } catch (err) {
+            alert("Hata: " + err.message);
+        }
+    }
+    
     // ---------- DOSYA İÇE AKTARMA (Firebase'e yaz) ----------
     async function importFromFile(file) {
         return new Promise((resolve, reject) => {
@@ -375,9 +429,10 @@
                 if (exists) skipped++;
                 else { await recordsRef.push(rec); added++; }
             }
-            document.getElementById('importFeedback').style.display = 'block';
-            document.getElementById('importFeedback').innerHTML = `✅ İçe aktarma tamamlandı: ${added} eklendi, ${skipped} atlandı.`;
-            setTimeout(() => document.getElementById('importFeedback').style.display = 'none', 5000);
+            const feedback = document.getElementById('importFeedback');
+            feedback.style.display = 'block';
+            feedback.innerHTML = `✅ İçe aktarma tamamlandı: ${added} eklendi, ${skipped} atlandı.`;
+            setTimeout(() => feedback.style.display = 'none', 5000);
         } catch (err) { alert("Hata: " + err.message); }
     }
     
@@ -434,7 +489,7 @@
         buildFilterCheckboxes();
         buildLegend();
         checkAdminStatus();
-        listenToFirebase(); // Firebase veri dinlemeyi başlat
+        listenToFirebase();
         
         document.getElementById('loginBtn').onclick = login;
         document.getElementById('logoutBtn').onclick = logout;
@@ -445,6 +500,7 @@
         document.getElementById('clearAllBtn').onclick = clearAllCategories;
         document.getElementById('importBtn').onclick = () => document.getElementById('fileInput').click();
         document.getElementById('fileInput').onchange = (e) => { if (e.target.files.length) handleImport(e.target.files[0]); e.target.value = ''; };
+        document.getElementById('restoreLocalBtn').onclick = restoreLocalData;
     }
     init();
 </script>
