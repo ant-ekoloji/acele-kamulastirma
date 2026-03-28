@@ -8,7 +8,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
-        /* (Aynı CSS, uzunluk nedeniyle kısaltılmıştır - orijinal stil korunacak) */
+        /* Aynı CSS, kısaltıldı - tam sürümde kullanılacak */
         * { box-sizing: border-box; }
         body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7fa; }
         .app-container { display: flex; flex-direction: column; height: 100vh; }
@@ -136,7 +136,7 @@
 <script>
     // ---------- FIREBASE YAPILANDIRMASI ----------
     // 🔥 AŞAĞIDAKİ FIREBASE CONFIG BİLGİLERİNİ KENDİ PROJENİZLE DEĞİŞTİRİN 🔥
-    const firebaseConfig = {
+   const firebaseConfig = {
   apiKey: "AIzaSyCfrZFOzg_an5WBFARS_1cB4Q3pfRguz8E",
   authDomain: "acele-kumulastirma.firebaseapp.com",
   databaseURL: "https://acele-kumulastirma-default-rtdb.europe-west1.firebasedatabase.app",
@@ -148,7 +148,6 @@
 };
 
     
-    // Firebase'i başlat
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
     const recordsRef = database.ref("kamulastirma");
@@ -195,7 +194,6 @@
     let selectedCategories = new Set(CATEGORIES);
     let map, currentMarkers = [];
     
-    // Firebase'den veri dinleme
     function listenToFirebase() {
         recordsRef.on('value', (snapshot) => {
             const data = snapshot.val();
@@ -203,7 +201,6 @@
                 kamulastirmaData = Object.entries(data).map(([key, value]) => ({ ...value, firebaseKey: key }));
             } else {
                 kamulastirmaData = [];
-                // Veritabanı boşsa demo verileri ekle
                 insertDemoDataIfEmpty();
             }
             refreshFilteredData();
@@ -213,11 +210,9 @@
         });
     }
     
-    // Demo verileri ekle (sadece veritabanı tamamen boşsa)
     async function insertDemoDataIfEmpty() {
         const snapshot = await recordsRef.once('value');
         if (snapshot.exists()) return;
-        
         const demoRecords = [
             { proje_adi: "Kuşadası-Söke İçmesuyu Projesi", karar_sayisi: "11111", tarih: "27.03.2026", resmi_gazete_sayisi: "33206", kamulastiran_kurum: "DSİ", tahmini_konum: "Kuşadası", coordinates: [27.2586, 37.8579], kategori: "Altyapı" },
             { proje_adi: "Bursa-Emek-Şehir Hastanesi Hafif Raylı Sistem", karar_sayisi: "11098", tarih: "19.03.2026", resmi_gazete_sayisi: "33201", kamulastiran_kurum: "Ulaştırma Bakanlığı", tahmini_konum: "Bursa", coordinates: [29.0609, 40.1833], kategori: "Ulaşım" },
@@ -228,13 +223,9 @@
             { proje_adi: "Bolkar Dağları Orman Rehabilitasyonu", karar_sayisi: "88888", tarih: "10.02.2026", resmi_gazete_sayisi: "33170", kamulastiran_kurum: "Orman Genel Müdürlüğü", tahmini_konum: "Niğde", coordinates: [34.6794, 37.9667], kategori: "Orman Alanları" },
             { proje_adi: "Efes Antik Kenti Çevre Düzenlemesi", karar_sayisi: "77777", tarih: "05.01.2026", resmi_gazete_sayisi: "33150", kamulastiran_kurum: "Kültür Bakanlığı", tahmini_konum: "Selçuk", coordinates: [27.3400, 37.9400], kategori: "Tarihi Sit Alanları" }
         ];
-        for (const rec of demoRecords) {
-            await recordsRef.push(rec);
-        }
-        console.log("Demo veriler eklendi.");
+        for (const rec of demoRecords) await recordsRef.push(rec);
     }
     
-    // Yeni kayıt ekleme (Firebase)
     async function addNewRecord(record) {
         const exists = kamulastirmaData.some(r => r.karar_sayisi === record.karar_sayisi);
         if (exists) return { success: false, message: "Bu karar sayısı zaten mevcut!" };
@@ -246,7 +237,6 @@
         }
     }
     
-    // Kayıt silme
     async function deleteRecord(firebaseKey) {
         if (!isAdmin) { alert("Bu işlem için admin girişi gereklidir."); return; }
         if (!firebaseKey) return;
@@ -257,12 +247,8 @@
         }
     }
     
-    // Filtrelenmiş veri
-    function getFilteredData() {
-        return kamulastirmaData.filter(rec => selectedCategories.has(rec.kategori));
-    }
+    function getFilteredData() { return kamulastirmaData.filter(rec => selectedCategories.has(rec.kategori)); }
     
-    // Harita güncelleme
     function updateMap() {
         if (!map) return;
         currentMarkers.forEach(m => map.removeLayer(m));
@@ -290,12 +276,12 @@
             const bounds = L.latLngBounds(currentMarkers.map(m => m.getLatLng()));
             map.fitBounds(bounds, { padding: [40, 40] });
         } else {
+            // Türkiye sınırlarına sığdır
             map.fitBounds(L.latLngBounds(L.latLng(36,26), L.latLng(42,45)));
         }
         document.getElementById('statsText').innerHTML = `📌 Gösterilen: ${filtered.length} / ${kamulastirmaData.length} karar`;
     }
     
-    // Kayıt listesi güncelleme
     function updateSidebarList() {
         const container = document.getElementById('recordList');
         if (!container) return;
@@ -322,7 +308,6 @@
     
     function refreshFilteredData() { updateMap(); updateSidebarList(); }
     
-    // Filtreleme arayüzü
     function buildFilterCheckboxes() {
         const container = document.getElementById('categoryFilters');
         container.innerHTML = '';
@@ -350,10 +335,7 @@
     async function restoreLocalData() {
         if (!isAdmin) { alert("Admin girişi gerekli."); return; }
         const localData = localStorage.getItem("aceleKamulastirmaData");
-        if (!localData) {
-            alert("Yerel veri bulunamadı.");
-            return;
-        }
+        if (!localData) { alert("Yerel veri bulunamadı."); return; }
         try {
             const oldRecords = JSON.parse(localData);
             let added = 0, skipped = 0;
@@ -361,7 +343,6 @@
                 const exists = kamulastirmaData.some(r => r.karar_sayisi === rec.karar_sayisi);
                 if (exists) skipped++;
                 else {
-                    // Firebase'e uygun formata çevir
                     const newRec = {
                         proje_adi: rec.proje_adi,
                         karar_sayisi: rec.karar_sayisi,
@@ -380,12 +361,10 @@
             feedback.style.display = 'block';
             feedback.innerHTML = `✅ Geri yükleme tamamlandı: ${added} yeni kayıt eklendi, ${skipped} kayıt atlandı.`;
             setTimeout(() => feedback.style.display = 'none', 5000);
-        } catch (err) {
-            alert("Hata: " + err.message);
-        }
+        } catch (err) { alert("Hata: " + err.message); }
     }
     
-    // ---------- DOSYA İÇE AKTARMA (Firebase'e yaz) ----------
+    // ---------- DOSYA İÇE AKTARMA ----------
     async function importFromFile(file) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -469,7 +448,7 @@
         else document.getElementById('formMessage').innerHTML = `❌ ${result.message}`;
     }
     
-    // ---------- HARİTA KATMANLARI ----------
+    // ---------- HARİTA KATMANLARI (Türkiye sınırlarına sığdırılmış) ----------
     function initMap() {
         const osmStandard = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' });
         const osmHumanitarian = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', { attribution: '© OSM Humanitarian' });
@@ -477,10 +456,12 @@
         const protectedArea = L.geoJSON({
             "type":"Feature","properties":{},"geometry":{"type":"Polygon","coordinates":[[[34.835,38.665],[34.85,38.665],[34.865,38.658],[34.87,38.645],[34.86,38.632],[34.842,38.63],[34.828,38.635],[34.82,38.645],[34.825,38.655],[34.835,38.665]]]}
         }, { style: { color: "#ff7800", weight: 2, fillColor: "#ff7800", fillOpacity: 0.2 }, attribution: "Örnek koruma alanı" });
-        map = L.map('map').setView([39, 35], 6);
+        
+        map = L.map('map');
+        const turkeyBounds = L.latLngBounds(L.latLng(36, 26), L.latLng(42, 45));
+        map.fitBounds(turkeyBounds);
         L.control.layers({ "OSM Standart": osmStandard, "OSM Humanitarian": osmHumanitarian, "ESRI Uydu": esriSatellite }, { "🌲 Koruma Alanları (örnek)": protectedArea }).addTo(map);
         osmStandard.addTo(map);
-        map.fitBounds(L.latLngBounds(L.latLng(36,26), L.latLng(42,45)));
     }
     
     // ---------- BAŞLATMA ----------
