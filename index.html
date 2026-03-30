@@ -16,40 +16,34 @@
         .stats { background: #2c3e4e; padding: 5px 12px; border-radius: 30px; font-size: 0.85rem; }
         .btn { border: none; color: white; padding: 6px 16px; border-radius: 30px; cursor: pointer; font-weight: bold; transition: 0.2s; font-size: 0.85rem; }
         .btn-add { background: #2ecc71; }
-        .btn-import { background: #f39c12; }
-        .btn-restore { background: #9b59b6; }
         .btn-login { background: #3498db; }
         .btn-logout { background: #e74c3c; }
         .main-content { display: flex; flex: 1; overflow: hidden; }
         #map { flex: 3; height: 100%; }
         .sidebar { flex: 1; background: white; border-left: 1px solid #ccc; overflow-y: auto; padding: 15px; min-width: 280px; }
         .filter-section { background: #f8f9fa; padding: 10px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ddd; }
-        .filter-group { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+        .filter-group { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; font-size: 0.8rem; }
         .legend { background: #f8f9fa; padding: 10px; border-radius: 8px; margin-bottom: 20px; font-size: 0.8rem; border: 1px solid #ddd; }
         .legend-item { display: flex; align-items: center; margin-bottom: 6px; }
-        .legend-color { width: 16px; height: 16px; border-radius: 50%; margin-right: 8px; border: 1px solid rgba(0,0,0,0.2); }
+        .legend-color { width: 14px; height: 14px; border-radius: 50%; margin-right: 8px; border: 1px solid rgba(0,0,0,0.2); }
         .record-list { max-height: 300px; overflow-y: auto; font-size: 0.8rem; }
-        .record-card { background: #fefefe; border-left: 4px solid #3498db; padding: 8px; margin-bottom: 8px; border-radius: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
-        .form-panel { background: #f9f9fc; border: 1px solid #ddd; border-radius: 12px; padding: 12px; margin-top: 15px; }
-        .form-panel input, .form-panel select { width: 100%; padding: 6px; margin: 5px 0 10px 0; border: 1px solid #ccc; border-radius: 6px; }
+        .record-card { background: #fefefe; border-left: 4px solid #3498db; padding: 8px; margin-bottom: 8px; border-radius: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); cursor: pointer; }
+        .record-card:hover { background: #f0f4f8; }
         .hidden { display: none !important; }
-        @media (max-width: 768px) { .main-content { flex-direction: column; } .sidebar { max-height: 40%; } #map { min-height: 300px; } }
+        @media (max-width: 768px) { .main-content { flex-direction: column; } .sidebar { max-height: 40%; } #map { min-height: 350px; } }
     </style>
 </head>
 <body>
 <div class="app-container">
     <div class="toolbar">
         <div class="title"><h1>🏗️ Acele Kamulaştırma Kararları</h1></div>
-        <div class="stats" id="statsText">Yükleniyor...</div>
+        <div id="statsText" class="stats">Yükleniyor...</div>
         <div style="display: flex; gap: 8px;">
             <div id="adminControls" class="admin-only hidden">
-                <button class="btn btn-add" id="showAddFormBtn">➕ Yeni Ekle</button>
-                <button class="btn btn-import" id="importBtn">📁 İçe Aktar</button>
-                <input type="file" id="fileInput" accept=".json,.geojson" style="display: none;" />
-                <button class="btn btn-restore" id="restoreLocalBtn">💾 Geri Yükle</button>
+                <button class="btn btn-add" onclick="document.getElementById('addFormContainer').classList.toggle('hidden')">➕ Yeni Ekle</button>
             </div>
             <button class="btn btn-login" id="loginBtn">🔐 Admin</button>
-            <button class="btn btn-logout hidden" id="logoutBtn">🚪 Çıkış</button>
+            <button class="btn btn-logout hidden" id="logoutBtn" onclick="location.reload()">🚪 Çıkış</button>
         </div>
     </div>
     <div class="main-content">
@@ -58,22 +52,19 @@
             <h3>🔍 Filtre</h3>
             <div class="filter-section">
                 <div id="categoryFilters" class="filter-group"></div>
-                <div style="margin-top:10px;"><button id="selectAllBtn">Tümü</button> <button id="clearAllBtn">Temizle</button></div>
             </div>
             <h3>📋 Renkler</h3>
             <div class="legend" id="legendContainer"></div>
             <h3>📌 Kayıt Listesi</h3>
             <div id="recordList" class="record-list"></div>
-            <div id="addFormContainer" class="admin-only hidden">
-                <div class="form-panel">
-                    <h4>Yeni Kayıt</h4>
-                    <input type="text" id="projeAdi" placeholder="Proje Adı">
-                    <input type="text" id="kararSayisi" placeholder="Karar No">
-                    <input type="text" id="coord" placeholder="Enlem, Boylam">
-                    <select id="kategoriSelect"></select>
-                    <button class="btn btn-add" id="saveRecordBtn">Kaydet</button>
-                    <button id="cancelAddBtn">İptal</button>
-                </div>
+            
+            <div id="addFormContainer" class="hidden" style="margin-top:20px; padding:10px; background:#eee; border-radius:8px;">
+                <h4>Yeni Kayıt Ekle</h4>
+                <input type="text" id="projeAdi" placeholder="Proje Adı" style="width:100%; margin-bottom:5px;">
+                <input type="text" id="kararSayisi" placeholder="Karar No" style="width:100%; margin-bottom:5px;">
+                <input type="text" id="coord" placeholder="Enlem, Boylam (Örn: 39.9, 32.8)" style="width:100%; margin-bottom:5px;">
+                <select id="kategoriSelect" style="width:100%; margin-bottom:10px;"></select>
+                <button class="btn btn-add" id="saveRecordBtn">Veritabanına Kaydet</button>
             </div>
         </div>
     </div>
@@ -101,14 +92,38 @@
         "Orman Alanları": "#27ae60", "Tarihi Sit Alanları": "#d35400", "Diğer": "#7f8c8d"
     };
 
-    let map, kamulastirmaData = [], currentMarkers = [], isAdmin = false;
+    let map, kamulastirmaData = [], currentMarkers = [];
     let selectedCategories = new Set(Object.keys(CATEGORY_COLORS));
 
     function initMap() {
         map = L.map('map');
-        const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-        
-        // İlk açılış: Türkiye'yi yatay sığdır
+
+        // --- KATMANLARIN TANIMLANMASI ---
+        const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap'
+        });
+
+        const esriSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: '© Esri & DigitalGlobe'
+        });
+
+        const googleTerrain = L.tileLayer('https://{s}.google.com/vt/lyrs=p&x={x}&y={y}&z={z}', {
+            subdomains:['mt0','mt1','mt2','mt3'],
+            attribution: '© Google Maps'
+        });
+
+        // Varsayılan olarak OSM ekle
+        osm.addTo(map);
+
+        // Sağ üstteki katman seçiciyi ekle
+        const baseMaps = {
+            "Sokak Haritası": osm,
+            "Uydu Görüntüsü": esriSatellite,
+            "Arazi Görünümü": googleTerrain
+        };
+        L.control.layers(baseMaps).addTo(map);
+
+        // İSTEDİĞİNİZ AYAR: Türkiye'yi yatay çerçeveye sığdır
         const turkeyBounds = L.latLngBounds(L.latLng(35.5, 25.5), L.latLng(42.5, 45.0));
         map.fitBounds(turkeyBounds);
     }
@@ -121,13 +136,21 @@
         
         filtered.forEach(rec => {
             if (!rec.coordinates) return;
-            const marker = L.circleMarker([rec.coordinates[1], rec.coordinates[0]], {
-                radius: 8, fillColor: CATEGORY_COLORS[rec.kategori], color: "#000", weight: 1, fillOpacity: 0.8
+            // Firebase formatı genelde [lng, lat] olduğu için:
+            const lat = rec.coordinates[1];
+            const lng = rec.coordinates[0];
+
+            const marker = L.circleMarker([lat, lng], {
+                radius: 8, 
+                fillColor: CATEGORY_COLORS[rec.kategori], 
+                color: "#000", 
+                weight: 1, 
+                fillOpacity: 0.8
             });
             
-            marker.bindPopup(`<b>${rec.proje_adi}</b><br>Karar: ${rec.karar_sayisi}`);
+            marker.bindPopup(`<b>${rec.proje_adi}</b><br>Karar No: ${rec.karar_sayisi}<br>İl/İlçe: ${rec.tahmini_konum || '-'}`);
             
-            // VERİYE TIKLAYINCA YAKLAŞMA ÖZELLİĞİ
+            // VERİYE TIKLAYINCA ODAKLANMA
             marker.on('click', function() {
                 map.setView(marker.getLatLng(), 12);
             });
@@ -136,18 +159,22 @@
             currentMarkers.push(marker);
         });
         
-        document.getElementById('statsText').innerText = `Toplam: ${filtered.length} Kayıt`;
+        document.getElementById('statsText').innerText = `Görüntülenen: ${filtered.length} Kayıt`;
         updateSidebarList(filtered);
     }
 
     function updateSidebarList(data) {
         const list = document.getElementById('recordList');
         list.innerHTML = data.map(rec => `
-            <div class="record-card" style="border-left-color:${CATEGORY_COLORS[rec.kategori]}">
-                <b>${rec.proje_adi}</b><br><small>${rec.tahmini_konum || ''}</small>
+            <div class="record-card" style="border-left-color:${CATEGORY_COLORS[rec.kategori]}" onclick="focusOnMarker(${rec.coordinates[1]}, ${rec.coordinates[0]})">
+                <b>${rec.proje_adi}</b><br><small>${rec.tahmini_konum || ''} (${rec.kategori})</small>
             </div>
         `).join('');
     }
+
+    window.focusOnMarker = (lat, lng) => {
+        map.setView([lat, lng], 12);
+    };
 
     function buildUI() {
         const filters = document.getElementById('categoryFilters');
@@ -155,7 +182,7 @@
         const legend = document.getElementById('legendContainer');
         
         Object.keys(CATEGORY_COLORS).forEach(cat => {
-            filters.innerHTML += `<label class="filter-checkbox"><input type="checkbox" checked onchange="toggleCat('${cat}', this.checked)"> ${cat}</label>`;
+            filters.innerHTML += `<label style="display:block;"><input type="checkbox" checked onchange="toggleCat('${cat}', this.checked)"> ${cat}</label>`;
             select.innerHTML += `<option value="${cat}">${cat}</option>`;
             legend.innerHTML += `<div class="legend-item"><div class="legend-color" style="background:${CATEGORY_COLORS[cat]}"></div>${cat}</div>`;
         });
@@ -174,19 +201,37 @@
         });
     }
 
-    // Admin Fonksiyonları
+    // Admin Girişi (Basit Şifre)
     document.getElementById('loginBtn').onclick = () => {
-        if(prompt("Şifre:") === "admin123") {
-            isAdmin = true;
-            document.getElementById('adminControls').classList.remove('hidden');
+        if(prompt("Yönetici Şifresi:") === "admin123") {
+            document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden'));
             document.getElementById('logoutBtn').classList.remove('hidden');
             document.getElementById('loginBtn').classList.add('hidden');
         }
     };
 
-    document.getElementById('logoutBtn').onclick = () => location.reload();
+    document.getElementById('saveRecordBtn').onclick = async () => {
+        const pName = document.getElementById('projeAdi').value;
+        const kNo = document.getElementById('kararSayisi').value;
+        const coords = document.getElementById('coord').value.split(',');
+        const cat = document.getElementById('kategoriSelect').value;
 
-    // Başlat
+        if(pName && kNo && coords.length === 2) {
+            await recordsRef.push({
+                proje_adi: pName,
+                karar_sayisi: kNo,
+                coordinates: [parseFloat(coords[1].trim()), parseFloat(coords[0].trim())],
+                kategori: cat,
+                tahmini_konum: "Yeni Kayıt"
+            });
+            alert("Kayıt eklendi!");
+            document.getElementById('addFormContainer').classList.add('hidden');
+        } else {
+            alert("Lütfen tüm alanları doldurun.");
+        }
+    };
+
+    // Başlatıcı
     initMap();
     buildUI();
     listenToFirebase();
