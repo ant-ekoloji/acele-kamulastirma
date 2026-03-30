@@ -271,13 +271,14 @@
             marker.addTo(map);
             currentMarkers.push(marker);
         });
-        if (currentMarkers.length) {
-            const bounds = L.latLngBounds(currentMarkers.map(m => m.getLatLng()));
-            map.fitBounds(bounds, { padding: [40, 40] });
-        } else {
-                // Marker yoksa Türkiye manzarasını koru
-            map.setView([39.0, 35.0], 6);
-        }
+       if (currentMarkers.length) {
+    // Otomatik odaklanmayı (fitBounds) devre dışı bırakıyoruz veya 
+    // sadece çok gerekliyse geniş bir çerçevede tutuyoruz.
+    // Eğer her zaman Türkiye'yi görmek istiyorsanız buradaki fitBounds satırını silebilirsiniz.
+    console.log("Veriler haritaya işlendi."); 
+} else {
+    const defaultBounds = L.latLngBounds(L.latLng(35.5, 25.5), L.latLng(42.5, 45.0));
+    map.fitBounds(defaultBounds)
         document.getElementById('statsText').innerHTML = `📌 Gösterilen: ${filtered.length} / ${kamulastirmaData.length} karar`;
     }
     
