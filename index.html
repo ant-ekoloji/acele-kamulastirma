@@ -50,8 +50,8 @@
         h4 { font-size: 0.9rem; margin-bottom: 10px; color: #2c3e50; font-weight: 600; border-left: 3px solid #3498db; padding-left: 8px; }
         
         .filter-section { background: #f8f9fa; padding: 12px; border-radius: 8px; border: 1px solid #e0e6ed; }
-        .filter-group { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 8px; }
-        .filter-group label { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; cursor: pointer; padding: 4px; border-radius: 4px; transition: background 0.2s; }
+        .filter-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; max-height: 200px; overflow-y: auto; padding: 4px; }
+        .filter-group label { display: flex; align-items: center; gap: 6px; font-size: 0.75rem; cursor: pointer; padding: 4px; border-radius: 4px; transition: background 0.2s; }
         .filter-group label:hover { background: #e9ecef; }
         
         .stats-panel { 
@@ -177,6 +177,7 @@
             .sidebar { max-height: 45%; min-width: auto; }
             #map { min-height: 250px; }
             .toolbar-buttons { width: 100%; justify-content: center; }
+            .filter-group { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
 </head>
@@ -201,7 +202,7 @@
                 <h4><i class="fas fa-filter"></i> KATEGORİ FİLTRELE</h4>
                 <div id="categoryFilters" class="filter-group"></div>
                 <div class="info-note" style="margin-top:8px;">
-                    <i class="fas fa-chart-line"></i> Toplam: <span id="totalFilteredCount">0</span> kayıt
+                    <i class="fas fa-chart-line"></i> Gösterilen: <span id="totalFilteredCount">0</span> / <span id="totalAllCount">0</span> kayıt
                 </div>
             </div>
 
@@ -273,20 +274,24 @@
         console.error("❌ Firebase başlatma hatası:", error);
     }
     
-    // Renkler
+    // TÜM KATEGORİLER İÇİN RENKLER (Verilerinizdeki tüm kategoriler eklendi)
     const COLORS = { 
         "Konut": "#2ecc71", 
         "Altyapı": "#3498db", 
         "Ulaşım": "#f39c12", 
         "Enerji": "#e67e22", 
         "Kentsel Dönüşüm": "#9b59b6", 
-        "Diğer": "#7f8c8d" 
+        "Diğer": "#7f8c8d",
+        "Maden / Petrol": "#e74c3c",
+        "Kıyılar": "#1abc9c",
+        "Tarihi Sit Alanları": "#f1c40f",
+        "Orman Alanları": "#27ae60"
     };
     
     // Global değişkenler
     let map, drawnItems;
     let kamulastirmaData = [];
-    let selectedCategories = new Set(Object.keys(COLORS));
+    let selectedCategories = new Set(Object.keys(COLORS)); // Tüm kategoriler seçili başlasın
     let isAdminMode = false;
     let drawControl = null;
     
@@ -362,10 +367,10 @@
                 if (coords && Array.isArray(coords) && coords.length >= 2) {
                     if (coords.length > 2 && Array.isArray(coords[0]) && coords[0].length > 2) {
                         marker = L.polygon(coords, {
-                            color: COLORS[item.kategori],
+                            color: COLORS[item.kategori] || "#95a5a6",
                             weight: 2,
                             fillOpacity: 0.4,
-                            fillColor: COLORS[item.kategori]
+                            fillColor: COLORS[item.kategori] || "#95a5a6"
                         });
                     } else {
                         const lat = coords[1];
@@ -373,7 +378,7 @@
                         if (lat && lng && !isNaN(lat) && !isNaN(lng)) {
                             marker = L.circleMarker([lat, lng], {
                                 radius: 7,
-                                fillColor: COLORS[item.kategori],
+                                fillColor: COLORS[item.kategori] || "#95a5a6",
                                 color: "#fff",
                                 weight: 2,
                                 fillOpacity: 0.9
@@ -413,17 +418,18 @@
         
         // Liste (silme butonlu)
         const listHtml = filtered.map((item, idx) => `
-            <div class="record-card" style="border-left-color: ${COLORS[item.kategori]}">
+            <div class="record-card" style="border-left-color: ${COLORS[item.kategori] || '#95a5a6'}">
                 <button class="delete-record" onclick="deleteRecord('${item.proje_adi?.replace(/'/g, "\\'")}', event)"><i class="fas fa-trash"></i></button>
                 <b onclick="focusToProject('${(item.proje_adi || '').replace(/'/g, "\\'")}')">${item.proje_adi || 'İsimsiz Proje'}</b>
                 <small onclick="focusToProject('${(item.proje_adi || '').replace(/'/g, "\\'")}')">${item.tahmini_konum || '?'} • ${item.karar_no || 'Karar No yok'}</small>
-                <div class="category-badge" style="background: ${COLORS[item.kategori]}20; color: ${COLORS[item.kategori]}">${item.kategori}</div>
+                <div class="category-badge" style="background: ${COLORS[item.kategori] || '#95a5a6'}20; color: ${COLORS[item.kategori] || '#95a5a6'}">${item.kategori}</div>
             </div>
         `).join('');
         
         document.getElementById('recordList').innerHTML = listHtml || '<div style="text-align:center; padding:20px;">📭 Kayıt bulunamadı</div>';
-        document.getElementById('statsCount').innerHTML = `📊 ${filtered.length} Kayıt`;
+        document.getElementById('statsCount').innerHTML = `📊 ${filtered.length} / ${kamulastirmaData.length} Kayıt`;
         document.getElementById('totalFilteredCount').innerText = filtered.length;
+        document.getElementById('totalAllCount').innerText = kamulastirmaData.length;
     }
     
     // Kayıt sil
@@ -440,10 +446,9 @@
                     .then(() => alert("✅ Kayıt silindi!"))
                     .catch(err => alert("❌ Silme hatası: " + err.message));
             } else {
-                // ID ile silme
-                const keys = Object.keys(kamulastirmaData.find(r => r.proje_adi === projeAdi) || {});
-                if (keys.length) {
-                    database.child(Object.keys(kamulastirmaData).find(k => kamulastirmaData[k]?.proje_adi === projeAdi)).remove()
+                const key = Object.keys(kamulastirmaData).find(k => kamulastirmaData[k]?.proje_adi === projeAdi);
+                if (key) {
+                    database.child(key).remove()
                         .then(() => alert("✅ Kayıt silindi!"))
                         .catch(err => alert("❌ Silme hatası: " + err.message));
                 }
@@ -485,7 +490,7 @@
         updateView();
     };
     
-    // Kategori filtrelerini oluştur
+    // Kategori filtrelerini oluştur (TÜM kategoriler için)
     function setupFilters() {
         const filterContainer = document.getElementById('categoryFilters');
         const selectContainer = document.getElementById('kategoriSelect');
@@ -493,12 +498,13 @@
         filterContainer.innerHTML = '';
         selectContainer.innerHTML = '';
         
-        Object.keys(COLORS).forEach(cat => {
+        // Tüm kategorileri alfabetik sırayla göster
+        Object.keys(COLORS).sort().forEach(cat => {
             filterContainer.innerHTML += `
                 <label>
                     <input type="checkbox" checked onchange="toggleCategory('${cat}', this.checked)">
                     <span style="display:inline-block; width:12px; height:12px; background:${COLORS[cat]}; border-radius:3px;"></span>
-                    ${cat}
+                    <span style="font-size:0.7rem;">${cat}</span>
                 </label>
             `;
             selectContainer.innerHTML += `<option value="${cat}">${cat}</option>`;
@@ -525,6 +531,7 @@
             if (!Array.isArray(data)) throw new Error("Dizi formatında olmalı");
             
             let imported = 0;
+            let skipped = 0;
             data.forEach(item => {
                 if (item.proje_adi && item.tahmini_konum && item.coordinates && item.kategori) {
                     database.push({
@@ -536,9 +543,11 @@
                         import_tarihi: new Date().toISOString()
                     });
                     imported++;
+                } else {
+                    skipped++;
                 }
             });
-            alert(`✅ ${imported} kayıt içe aktarıldı! Sayfa yenileniyor...`);
+            alert(`✅ ${imported} kayıt içe aktarıldı! ${skipped > 0 ? skipped + ' kayıt atlandı (eksik bilgi).' : ''}\nSayfa yenileniyor...`);
             setTimeout(() => location.reload(), 1500);
         } catch (err) {
             alert("❌ Geçersiz JSON formatı: " + err.message);
@@ -635,6 +644,25 @@
             if (data) {
                 kamulastirmaData = Object.entries(data).map(([id, val]) => ({ id, ...val }));
                 console.log(`📥 Firebase'den ${kamulastirmaData.length} kayıt alındı`);
+                
+                // Dinamik olarak yeni kategorileri renk paletine ekle
+                const existingCategories = new Set(Object.keys(COLORS));
+                kamulastirmaData.forEach(item => {
+                    if (item.kategori && !existingCategories.has(item.kategori)) {
+                        COLORS[item.kategori] = "#" + Math.floor(Math.random()*16777215).toString(16);
+                        console.log(`🆕 Yeni kategori eklendi: ${item.kategori}`);
+                    }
+                });
+                
+                // Filtreleri yenile (yeni kategoriler için)
+                setupFilters();
+                
+                // Seçili kategorileri güncelle (tüm yeni kategorileri ekle)
+                Object.keys(COLORS).forEach(cat => {
+                    if (!selectedCategories.has(cat)) {
+                        selectedCategories.add(cat);
+                    }
+                });
             } else {
                 kamulastirmaData = [];
             }
