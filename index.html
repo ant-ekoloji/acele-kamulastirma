@@ -3,83 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Acele Kamulaştırma Haritası | Pro Sürüm</title>
+    <title>Acele Kamulaştırma Haritası | Pro v3</title>
+    
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css"/>
+    
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
     <style>
         * { box-sizing: border-box; }
-        body { margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; }
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; background: #f0f2f5; }
         .app-container { display: flex; flex-direction: column; height: 100vh; }
-        .toolbar { background: #1a2533; color: white; padding: 12px 25px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 10px rgba(0,0,0,0.3); z-index: 1000; }
-        .title h1 { margin: 0; font-size: 1.3rem; letter-spacing: 0.5px; }
-        .stats { background: #34495e; padding: 6px 15px; border-radius: 20px; font-size: 0.85rem; font-weight: 500; }
-        .btn { border: none; color: white; padding: 8px 18px; border-radius: 6px; cursor: pointer; font-weight: 600; transition: 0.3s; font-size: 0.85rem; }
-        .btn-login { background: #3498db; }
-        .btn-login:hover { background: #2980b9; }
-        .btn-add { background: #27ae60; }
+        .toolbar { background: #1a2533; color: white; padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         .main-content { display: flex; flex: 1; overflow: hidden; }
         #map { flex: 3; height: 100%; }
-        .sidebar { flex: 1; background: white; border-left: 1px solid #d1d8e0; overflow-y: auto; padding: 20px; min-width: 320px; }
-        .filter-section { background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #e1e8ed; }
-        .filter-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.8rem; }
-        .legend { background: #fff; padding: 12px; border-radius: 10px; margin-bottom: 20px; font-size: 0.8rem; border: 1px solid #e1e8ed; }
-        .legend-item { display: flex; align-items: center; margin-bottom: 8px; }
-        .legend-color { width: 12px; height: 12px; border-radius: 50%; margin-right: 10px; border: 1px solid rgba(0,0,0,0.1); }
-        .record-card { background: white; border-left: 5px solid #3498db; padding: 12px; margin-bottom: 12px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: 0.2s; }
-        .record-card:hover { transform: translateX(5px); background: #f9fbff; }
-        .record-card b { display: block; color: #2c3e50; margin-bottom: 5px; font-size: 0.9rem; }
-        .record-card small { color: #7f8c8d; font-size: 0.75rem; }
-        .rg-link { color: #e74c3c; text-decoration: none; font-weight: bold; }
-        .rg-link:hover { text-decoration: underline; }
+        .sidebar { flex: 1; background: white; border-left: 1px solid #ddd; overflow-y: auto; padding: 15px; min-width: 320px; }
+        
+        /* İstatistik Paneli */
+        .stats-panel { background: #eef2f7; border-radius: 8px; padding: 10px; margin-bottom: 15px; border-left: 4px solid #3498db; }
+        .city-item { display: flex; justify-content: space-between; font-size: 0.85rem; padding: 3px 0; border-bottom: 1px solid #ddd; }
+        
+        .record-card { background: #fff; border: 1px solid #eee; border-left: 5px solid #3498db; padding: 10px; margin-bottom: 10px; border-radius: 6px; cursor: pointer; transition: 0.2s; }
+        .record-card:hover { background: #f9fbff; transform: scale(1.01); }
+        .admin-section { background: #fff3e0; padding: 10px; border-radius: 8px; border: 1px dashed #fb8c00; margin-top: 15px; }
         .hidden { display: none !important; }
-        @media (max-width: 768px) { .main-content { flex-direction: column; } .sidebar { max-height: 45%; } #map { min-height: 300px; } }
+        input, select { width: 100%; padding: 8px; margin: 4px 0; border: 1px solid #ccc; border-radius: 4px; }
+        .btn { border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .btn-blue { background: #3498db; color: white; }
     </style>
 </head>
 <body>
 
 <div class="app-container">
     <div class="toolbar">
-        <div class="title"><h1>🏗️ Acele Kamulaştırma Portalı</h1></div>
-        <div id="statsText" class="stats">Yükleniyor...</div>
-        <div style="display: flex; gap: 10px;">
-            <div id="adminControls" class="admin-only hidden">
-                <button class="btn btn-add" onclick="document.getElementById('addFormContainer').classList.toggle('hidden')">➕ Karar Ekle</button>
-            </div>
-            <button class="btn btn-login" id="loginBtn">🔐 Admin</button>
-            <button class="btn" id="logoutBtn" style="background:#95a5a6" onclick="location.reload()" class="hidden">🚪 Çıkış</button>
+        <h3>🏗️ Kamulaştırma Portalı</h3>
+        <div id="statsCount">Veriler yükleniyor...</div>
+        <div>
+            <button class="btn btn-blue" id="loginBtn">🔐 Admin</button>
+            <button class="btn" id="logoutBtn" style="background:#e74c3c; color:white;" class="hidden" onclick="location.reload()">Çıkış</button>
         </div>
     </div>
 
     <div class="main-content">
         <div id="map"></div>
         <div class="sidebar">
-            <h3>🔍 Kategori Filtreleri</h3>
-            <div class="filter-section">
-                <div id="categoryFilters" class="filter-group"></div>
-            </div>
+            <h4>📊 Şehir İstatistikleri</h4>
+            <div id="cityStats" class="stats-panel">Henüz veri yok...</div>
 
-            <h3>📋 Lejant</h3>
-            <div class="legend" id="legendContainer"></div>
+            <h4>🔍 Filtrele</h4>
+            <div id="categoryFilters" style="display:grid; grid-template-columns: 1fr 1fr; gap:5px; font-size:0.8rem; margin-bottom:15px;"></div>
 
-            <h3>📌 Son Kararlar</h3>
-            <div id="recordList" class="record-list"></div>
+            <h4>📌 Karar Listesi</h4>
+            <div id="recordList"></div>
 
-            <div id="addFormContainer" class="hidden" style="margin-top:20px; padding:15px; background:#f1f2f6; border-radius:10px; border:1px dashed #3498db;">
-                <h4 style="margin-top:0">Yeni Veri Girişi</h4>
-                <input type="text" id="projeAdi" placeholder="Proje Tam Adı" style="width:100%; padding:8px; margin-bottom:8px; border-radius:4px; border:1px solid #ccc;">
-                <input type="text" id="kararSayisi" placeholder="Karar Sayısı (Örn: 1120)" style="width:100%; padding:8px; margin-bottom:8px; border-radius:4px; border:1px solid #ccc;">
-                <input type="text" id="rgNo" placeholder="Resmî Gazete No (Örn: 32450)" style="width:100%; padding:8px; margin-bottom:8px; border-radius:4px; border:1px solid #ccc;">
-                <input type="text" id="coord" placeholder="Enlem, Boylam (Örn: 37.1, 28.5)" style="width:100%; padding:8px; margin-bottom:8px; border-radius:4px; border:1px solid #ccc;">
-                <select id="kategoriSelect" style="width:100%; padding:8px; margin-bottom:12px; border-radius:4px; border:1px solid #ccc;"></select>
-                <button class="btn btn-add" id="saveRecordBtn" style="width:100%">💾 Kaydet ve Yayınla</button>
+            <div id="adminControls" class="admin-section hidden">
+                <h4>✍️ Yeni Karar / Poligon Ekle</h4>
+                <p style="font-size:0.75rem; color:#666;">Haritadaki çizim araçlarını kullanarak alan çizebilir veya koordinat girebilirsiniz.</p>
+                <input type="text" id="projeAdi" placeholder="Proje Adı">
+                <input type="text" id="kararNo" placeholder="Karar Sayısı">
+                <input type="text" id="sehirInput" placeholder="İl (Örn: Antalya)">
+                <input type="text" id="coordsInput" placeholder="Koordinatlar (Çizimle otomatik dolar)">
+                <select id="kategoriSelect"></select>
+                <button class="btn btn-blue" style="width:100%; margin-top:10px;" id="saveBtn">💾 Veritabanına Yaz</button>
             </div>
         </div>
     </div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+
 <script>
+    // --- FIREBASE AYARLARINIZ ---
     const firebaseConfig = {
         apiKey: "AIzaSyCfrZFOzg_an5WBFARS_1cB4Q3pfRguz8E",
         authDomain: "acele-kumulastirma.firebaseapp.com",
@@ -91,137 +87,109 @@
     };
 
     firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
-    const recordsRef = database.ref("kamulastirma");
+    const db = firebase.database().ref("kamulastirma");
 
-    const CATEGORY_COLORS = {
-        "Konut": "#2ecc71", "Altyapı": "#3498db", "Ulaşım": "#f39c12", "Enerji": "#e67e22",
-        "Kentsel Dönüşüm": "#9b59b6", "Maden / Petrol": "#95a5a6", "Kıyılar": "#1abc9c",
-        "Orman Alanları": "#27ae60", "Tarihi Sit Alanları": "#d35400", "Diğer": "#7f8c8d"
-    };
-
-    let map, kamulastirmaData = [], currentMarkers = [];
-    let selectedCategories = new Set(Object.keys(CATEGORY_COLORS));
+    const COLORS = { "Konut": "#2ecc71", "Altyapı": "#3498db", "Ulaşım": "#f39c12", "Enerji": "#e67e22", "Kentsel Dönüşüm": "#9b59b6", "Diğer": "#7f8c8d" };
+    let map, kamulastirmaData = [], drawnItems, selectedCategories = new Set(Object.keys(COLORS));
 
     function initMap() {
         map = L.map('map');
+        const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}');
         
-        const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OSM' });
-        const esri = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: '© Esri' });
-        const terrain = L.tileLayer('https://{s}.google.com/vt/lyrs=p&x={x}&y={y}&z={z}', { subdomains:['mt0','mt1','mt2','mt3'], attribution: '© Google' });
-
-        osm.addTo(map);
-        L.control.layers({ "Harita": osm, "Uydu": esri, "Arazi": terrain }).addTo(map);
-
-        // İSTEDİĞİNİZ: Türkiye yatay çerçeve odaklı başlangıç
+        L.control.layers({ "Harita": osm, "Uydu": satellite }).addTo(map);
         map.fitBounds(L.latLngBounds(L.latLng(35.5, 25.5), L.latLng(42.5, 45.0)));
-    }
 
-    function updateMap() {
-        currentMarkers.forEach(m => map.removeLayer(m));
-        currentMarkers = [];
-        
-        const filtered = kamulastirmaData.filter(rec => selectedCategories.has(rec.kategori));
-        
-        filtered.forEach(rec => {
-            if (!rec.coordinates) return;
-            const marker = L.circleMarker([rec.coordinates[1], rec.coordinates[0]], {
-                radius: 9, fillColor: CATEGORY_COLORS[rec.kategori], color: "#fff", weight: 2, fillOpacity: 0.9
-            });
-            
-            // Resmî Gazete Linki Oluşturma (Eğer numara varsa)
-            const rgLink = rec.resmi_gazete_sayisi && rec.resmi_gazete_sayisi !== "-" 
-                ? `<br>📰 <a href="https://www.resmigazete.gov.tr/eskiler/ara.php?karar=${rec.karar_sayisi}" target="_blank" class="rg-link">Resmî Gazete'de Gör</a>`
-                : "";
-
-            marker.bindPopup(`
-                <div style="font-family:sans-serif; min-width:200px;">
-                    <b style="color:#2c3e50;">${rec.proje_adi}</b><br>
-                    <small>Karar No: ${rec.karar_sayisi}</small>
-                    <hr style="margin:5px 0; border:0; border-top:1px solid #eee;">
-                    📍 Konum: ${rec.tahmini_konum || '-'}<br>
-                    🏷️ Kategori: <b>${rec.kategori}</b>
-                    ${rgLink}
-                </div>
-            `);
-            
-            marker.on('click', () => map.setView(marker.getLatLng(), 12));
-            marker.addTo(map);
-            currentMarkers.push(marker);
+        // Çizim Araçları (Draw)
+        drawnItems = new L.FeatureGroup().addTo(map);
+        const drawControl = new L.Control.Draw({
+            edit: { featureGroup: drawnItems },
+            draw: { polygon: true, polyline: false, rectangle: true, circle: false, marker: true }
         });
         
-        document.getElementById('statsText').innerText = `${filtered.length} Karar Listeleniyor`;
-        updateSidebarList(filtered);
+        // Çizim bitince koordinatları forma yaz
+        map.on(L.Draw.Event.CREATED, (e) => {
+            const layer = e.layer;
+            drawnItems.addLayer(layer);
+            const geojson = layer.toGeoJSON();
+            document.getElementById('coordsInput').value = JSON.stringify(geojson.geometry.coordinates);
+        });
     }
 
-    function updateSidebarList(data) {
-        const list = document.getElementById('recordList');
-        list.innerHTML = data.slice(0, 50).map(rec => `
-            <div class="record-card" style="border-left-color:${CATEGORY_COLORS[rec.kategori]}" onclick="map.setView([${rec.coordinates[1]}, ${rec.coordinates[0]}], 12)">
-                <b>${rec.proje_adi.substring(0, 60)}...</b>
-                <small>${rec.tahmini_konum || 'Konum Belirtilmemiş'} | ${rec.kategori}</small>
+    function updateView() {
+        // Haritayı temizle
+        map.eachLayer(l => { if(!!l.toGeoJSON && l !== drawnItems) map.removeLayer(l); });
+
+        const filtered = kamulastirmaData.filter(d => selectedCategories.has(d.kategori));
+        const cityCounts = {};
+
+        filtered.forEach(d => {
+            // Şehir İstatistiği Hesabı
+            const city = d.tahmini_konum || "Belirsiz";
+            cityCounts[city] = (cityCounts[city] || 0) + 1;
+
+            // Haritaya Ekleme (Nokta veya Poligon)
+            let layer;
+            if(Array.isArray(d.coordinates[0])) { // Poligon durumu
+                layer = L.geoJSON({ type: "Feature", geometry: { type: "Polygon", coordinates: d.coordinates } }, {
+                    style: { color: COLORS[d.kategori], fillOpacity: 0.5 }
+                });
+            } else { // Nokta durumu
+                layer = L.circleMarker([d.coordinates[1], d.coordinates[0]], { radius: 8, fillColor: COLORS[d.kategori], color: "#000", fillOpacity: 0.8 });
+            }
+
+            layer.bindPopup(`<b>${d.proje_adi}</b><br>Karar No: ${d.karar_no || d.karar_sayisi}<br><a href="https://www.resmigazete.gov.tr/eskiler/ara.php" target="_blank">Resmî Gazete'de Ara</a>`);
+            layer.on('click', () => map.setView(layer.getBounds ? layer.getBounds().getCenter() : layer.getLatLng(), 12));
+            layer.addTo(map);
+        });
+
+        // UI Güncelle
+        document.getElementById('cityStats').innerHTML = Object.entries(cityCounts)
+            .sort((a,b) => b[1] - a[1])
+            .map(([c, n]) => `<div class="city-item"><span>${c}</span><b>${n}</b></div>`).join('');
+        
+        document.getElementById('recordList').innerHTML = filtered.map(d => `
+            <div class="record-card" style="border-left-color:${COLORS[d.kategori]}">
+                <b>${d.proje_adi}</b><small>${d.tahmini_konum || ''} - ${d.kategori}</small>
             </div>
         `).join('');
     }
 
-    function buildUI() {
-        const filters = document.getElementById('categoryFilters');
-        const select = document.getElementById('kategoriSelect');
-        const legend = document.getElementById('legendContainer');
-        
-        Object.keys(CATEGORY_COLORS).forEach(cat => {
-            filters.innerHTML += `<label style="display:flex; align-items:center; gap:5px; cursor:pointer;"><input type="checkbox" checked onchange="toggleCat('${cat}', this.checked)"> ${cat}</label>`;
-            select.innerHTML += `<option value="${cat}">${cat}</option>`;
-            legend.innerHTML += `<div class="legend-item"><div class="legend-color" style="background:${CATEGORY_COLORS[cat]}"></div>${cat}</div>`;
-        });
-    }
-
-    window.toggleCat = (cat, isChecked) => {
-        isChecked ? selectedCategories.add(cat) : selectedCategories.delete(cat);
-        updateMap();
-    };
-
-    function listenToFirebase() {
-        recordsRef.on('value', snapshot => {
-            const val = snapshot.val();
-            kamulastirmaData = val ? Object.entries(val).map(([k, v]) => ({...v, firebaseKey: k})) : [];
-            updateMap();
-        });
-    }
-
+    // Admin Girişi
     document.getElementById('loginBtn').onclick = () => {
-        if(prompt("Yönetici Anahtarı:") === "admin123") {
-            document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden'));
-            document.getElementById('logoutBtn').classList.remove('hidden');
-            document.getElementById('loginBtn').classList.add('hidden');
+        if(prompt("Şifre:") === "admin123") {
+            document.getElementById('adminControls').classList.remove('hidden');
+            map.addControl(new L.Control.Draw({ edit: { featureGroup: drawnItems } }));
         }
     };
 
-    document.getElementById('saveRecordBtn').onclick = async () => {
-        const pName = document.getElementById('projeAdi').value;
-        const kNo = document.getElementById('kararSayisi').value;
-        const rg = document.getElementById('rgNo').value;
-        const coords = document.getElementById('coord').value.split(',');
-
-        if(pName && kNo && coords.length === 2) {
-            await recordsRef.push({
-                proje_adi: pName,
-                karar_sayisi: kNo,
-                resmi_gazete_sayisi: rg || "-",
-                coordinates: [parseFloat(coords[1].trim()), parseFloat(coords[0].trim())],
-                kategori: document.getElementById('kategoriSelect').value,
-                tahmini_konum: "Sisteme Yeni Eklendi"
-            });
-            alert("Yeni Karar Başarıyla Eklendi!");
-            document.getElementById('addFormContainer').classList.add('hidden');
-        } else {
-            alert("Lütfen en az Proje Adı, Karar No ve Koordinat giriniz.");
-        }
+    // Kaydetme
+    document.getElementById('saveBtn').onclick = async () => {
+        const coords = JSON.parse(document.getElementById('coordsInput').value);
+        await db.push({
+            proje_adi: document.getElementById('projeAdi').value,
+            karar_no: document.getElementById('kararNo').value,
+            tahmini_konum: document.getElementById('sehirInput').value,
+            coordinates: coords,
+            kategori: document.getElementById('kategoriSelect').value
+        });
+        alert("Başarıyla Kaydedildi!");
+        location.reload();
     };
 
+    // Başlatıcılar
     initMap();
-    buildUI();
-    listenToFirebase();
+    Object.keys(COLORS).forEach(c => {
+        document.getElementById('categoryFilters').innerHTML += `<label><input type="checkbox" checked onchange="toggleCat('${c}', this.checked)"> ${c}</label>`;
+        document.getElementById('kategoriSelect').innerHTML += `<option value="${c}">${c}</option>`;
+    });
+    window.toggleCat = (c, s) => { s ? selectedCategories.add(c) : selectedCategories.delete(c); updateView(); };
+    db.on('value', s => { 
+        const v = s.val(); 
+        kamulastirmaData = v ? Object.values(v) : []; 
+        updateView(); 
+    });
+
 </script>
 </body>
 </html>
