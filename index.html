@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Acele Kamulaştırma Portalı | v8</title>
+    <title>Acele Kamulaştırma Portalı | v10</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css"/>
@@ -13,45 +13,44 @@
 
     <style>
         * { box-sizing: border-box; }
-        body { margin: 0; padding: 0; font-family: sans-serif; background: #f4f7fa; }
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; background: #f4f7fa; }
         .app-container { display: flex; flex-direction: column; height: 100vh; }
         .toolbar { background: #1e2a3a; color: white; padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; z-index: 1000; }
         .main-content { display: flex; flex: 1; overflow: hidden; }
         #map { flex: 3; height: 100%; background: #ccc; }
         
-        .sidebar { flex: 1; background: white; border-left: 1px solid #ccc; overflow-y: auto; padding: 12px; min-width: 300px; display: flex; flex-direction: column; gap: 10px; }
-        h4 { margin: 0; font-size: 0.8rem; border-bottom: 2px solid #3498db; color: #333; padding-bottom: 2px; text-transform: uppercase; }
+        .sidebar { flex: 1; background: white; border-left: 1px solid #ccc; overflow-y: auto; padding: 12px; min-width: 300px; display: flex; flex-direction: column; gap: 12px; }
+        h4 { margin: 0 0 5px 0; font-size: 0.9rem; border-bottom: 2px solid #3498db; display: inline-block; color: #2c3e50; }
 
         .filter-section { background: #f8f9fa; padding: 8px; border-radius: 6px; border: 1px solid #ddd; }
         .filter-group { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; font-size: 0.7rem; }
 
-        .stats-panel { background: #f1f4f9; border-radius: 6px; padding: 5px; border: 1px solid #d1d9e6; max-height: 110px; overflow-y: auto; }
-        .city-item { display: flex; justify-content: space-between; font-size: 0.75rem; padding: 3px 0; border-bottom: 1px solid #eee; }
+        .stats-panel { background: #f1f4f9; border-radius: 6px; padding: 6px; border: 1px solid #d1d9e6; max-height: 120px; overflow-y: auto; }
+        .city-item { display: flex; justify-content: space-between; font-size: 0.75rem; padding: 3px 0; border-bottom: 1px solid #e0e6ed; }
 
         .record-list-container { flex: 1; overflow-y: auto; }
         .record-card { background: #fff; border-left: 4px solid #3498db; padding: 6px; margin-bottom: 6px; border-radius: 4px; border: 1px solid #eee; cursor: pointer; }
-        .record-card b { display: block; font-size: 0.75rem; color: #2c3e50; line-height: 1.2; font-weight: 500; }
+        .record-card b { display: block; font-weight: 500; font-size: 0.75rem; color: #2c3e50; line-height: 1.2; }
         .record-card small { font-size: 0.65rem; color: #666; }
 
-        .admin-box { background: #fff3e0; padding: 10px; border-radius: 6px; border: 1px dashed #fb8c00; font-size: 0.75rem; }
+        .admin-section { background: #fff3e0; padding: 10px; border-radius: 6px; border: 1px dashed #fb8c00; font-size: 0.75rem; }
         input, select { width: 100%; padding: 5px; margin: 3px 0; border: 1px solid #ccc; border-radius: 4px; font-size: 0.75rem; }
-        .btn { border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.75rem; }
+        .btn { border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.75rem; }
         .btn-blue { background: #3498db; color: white; }
         .hidden { display: none !important; }
-        #status-log { position: fixed; top: 50px; left: 10px; background: rgba(255,0,0,0.8); color: white; padding: 5px; font-size: 10px; z-index: 9999; border-radius: 4px; display: none; }
+        
+        @media (max-width: 768px) { .main-content { flex-direction: column; } .sidebar { max-height: 50%; } }
     </style>
 </head>
 <body>
 
-<div id="status-log">Bağlantı hatası bekleniyor...</div>
-
 <div class="app-container">
     <div class="toolbar">
-        <h3 style="margin:0; font-size:0.9rem;">🏗️ Acele Kamulaştırma Portalı</h3>
-        <div id="statsCount" style="font-size:0.7rem">Veri bekleniyor...</div>
+        <h4 style="color:white; border:none; margin:0">🏗️ Kamulaştırma Portalı</h4>
+        <div id="statsCount" style="font-size:0.75rem">Bağlanıyor...</div>
         <div>
             <button class="btn btn-blue" id="loginBtn">🔐 Admin</button>
-            <button class="btn" id="logoutBtn" style="background:#e74c3c; color:white;" class="hidden" onclick="location.reload()">Çıkış</button>
+            <button class="btn" id="logoutBtn" style="background:#e74c3c; color:white; display:none;" onclick="location.reload()">Çıkış</button>
         </div>
     </div>
 
@@ -64,8 +63,8 @@
             </div>
 
             <div>
-                <h4>📊 Şehir Dağılımı</h4>
-                <div id="cityStats" class="stats-panel">Liste boş.</div>
+                <h4>📊 Şehir İstatistikleri</h4>
+                <div id="cityStats" class="stats-panel">Veri bekleniyor...</div>
             </div>
 
             <div class="record-list-container">
@@ -73,12 +72,12 @@
                 <div id="recordList"></div>
             </div>
 
-            <div id="adminControls" class="admin-box hidden">
-                <h4>✍️ Veri Girişi</h4>
+            <div id="adminControls" class="admin-section hidden">
+                <h4>✍️ Yönetici Paneli</h4>
                 <input type="text" id="projeAdi" placeholder="Proje Adı">
                 <input type="text" id="kararNo" placeholder="Karar No">
-                <input type="text" id="sehirInput" placeholder="Şehir">
-                <input type="text" id="coordsInput" placeholder="Koordinat (Çizimle Dolar)" readonly>
+                <input type="text" id="sehirInput" placeholder="İl">
+                <input type="text" id="coordsInput" placeholder="Koordinat (Çizimle dolar)" readonly>
                 <select id="kategoriSelect"></select>
                 <button class="btn btn-blue" style="width:100%; margin-top:5px;" id="saveBtn">💾 Kaydet</button>
             </div>
@@ -90,107 +89,95 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
 
 <script>
-    // --- FIREBASE BAĞLANTISI ---
+    // 🔥 EKRAN GÖRÜNTÜSÜNDEKİ GERÇEK BİLGİLERİNİZLE GÜNCELLENDİ 🔥
     const firebaseConfig = {
         apiKey: "AIzaSyCfrZFOzg_an5WBFARS_1cB4Q3pfRguz8E",
         authDomain: "acele-kumulastirma.firebaseapp.com",
-        databaseURL: "https://acele-kumulastirma-default-rtdb.europe-west1.firebasedatabase.app",
+        databaseURL: "https://acele-kumulastirma-default-rtdb.europe-west1.firebasedatabase.app", // Ekran görüntüsündeki adres
         projectId: "acele-kumulastirma",
         storageBucket: "acele-kumulastirma.firebasestorage.app",
         messagingSenderId: "935988668675",
         appId: "1:935988668675:web:c934a82fbfafc7f5512136"
     };
 
-    function logStatus(msg, isError = true) {
-        const log = document.getElementById('status-log');
-        log.style.display = 'block';
-        log.innerText = msg;
-        if(!isError) log.style.background = "green";
-        console.log(msg);
-    }
-
-    try {
-        firebase.initializeApp(firebaseConfig);
-        var database = firebase.database();
-        var dbRef = database.ref("kamulastirma");
-    } catch (e) {
-        logStatus("Firebase başlatılamadı: " + e.message);
-    }
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database().ref("kamulastirma");
 
     const COLORS = { "Konut": "#2ecc71", "Altyapı": "#3498db", "Ulaşım": "#f39c12", "Enerji": "#e67e22", "Kentsel Dönüşüm": "#9b59b6", "Diğer": "#7f8c8d" };
     let map, kamulastirmaData = [], drawnItems, selectedCategories = new Set(Object.keys(COLORS));
 
     function initMap() {
-        try {
-            map = L.map('map');
-            const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-            map.fitBounds(L.latLngBounds(L.latLng(35.5, 25.5), L.latLng(42.5, 45.0)));
-            drawnItems = new L.FeatureGroup().addTo(map);
-        } catch (e) {
-            logStatus("Harita başlatılamadı: " + e.message);
-        }
+        map = L.map('map');
+        const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}');
+        L.control.layers({ "Harita": osm, "Uydu": satellite }).addTo(map);
+        
+        // 🇹🇷 Türkiye yatay sığdırma (Paylaştığınız görseldeki kırmızı çizgiler arası)
+        map.fitBounds(L.latLngBounds(L.latLng(35.5, 25.5), L.latLng(42.5, 45.0)));
+        drawnItems = new L.FeatureGroup().addTo(map);
     }
 
-    function renderUI() {
+    function updateView() {
         if (!map) return;
-        map.eachLayer(l => { if(l instanceof L.CircleMarker || l instanceof L.GeoJSON) map.removeLayer(l); });
-
+        map.eachLayer(l => { if(!!l.toGeoJSON && l !== drawnItems) map.removeLayer(l); });
+        
         const filtered = kamulastirmaData.filter(d => selectedCategories.has(d.kategori));
-        const cityMap = {};
+        const cityCounts = {};
 
         filtered.forEach(d => {
-            if (!d.coordinates) return;
-            const c = d.tahmini_konum || "Diğer";
-            cityMap[c] = (cityMap[c] || 0) + 1;
+            const city = d.tahmini_konum || "Diğer";
+            cityCounts[city] = (cityCounts[city] || 0) + 1;
 
-            try {
-                let layer;
-                if (Array.isArray(d.coordinates[0])) {
-                    layer = L.geoJSON({ type: "Feature", geometry: { type: "Polygon", coordinates: d.coordinates } }, {
-                        style: { color: COLORS[d.kategori], weight: 2, fillOpacity: 0.4 }
-                    });
-                } else {
-                    layer = L.circleMarker([d.coordinates[1], d.coordinates[0]], { radius: 6, fillColor: COLORS[d.kategori], color: "#000", weight: 1, fillOpacity: 0.8 });
-                }
-                layer.bindPopup(`<b>${d.proje_adi}</b><br>Karar: ${d.karar_no || d.karar_sayisi}`);
-                layer.on('click', () => {
-                    const center = layer.getBounds ? layer.getBounds().getCenter() : layer.getLatLng();
-                    map.setView(center, 12);
+            let layer;
+            // Poligon desteği (Gelişmiş veri yapısı)
+            if(d.coordinates && Array.isArray(d.coordinates[0])) { 
+                layer = L.geoJSON({ type: "Feature", geometry: { type: "Polygon", coordinates: d.coordinates } }, {
+                    style: { color: COLORS[d.kategori], weight: 2, fillOpacity: 0.4 }
                 });
+            } else if (d.coordinates) { 
+                layer = L.circleMarker([d.coordinates[1], d.coordinates[0]], { radius: 6, fillColor: COLORS[d.kategori], color: "#000", weight:1, fillOpacity: 0.8 });
+            }
+
+            if(layer) {
+                const rgUrl = `https://www.resmigazete.gov.tr/eskiler/ara.php?karar=${d.karar_no || d.karar_sayisi || ''}`;
+                layer.bindPopup(`<b>${d.proje_adi}</b><br>Karar: ${d.karar_no || d.karar_sayisi}<br><a href="${rgUrl}" target="_blank" style="color:#e74c3c; font-weight:bold;">📰 Resmî Gazete Linki</a>`);
+                layer.on('click', () => map.setView(layer.getBounds ? layer.getBounds().getCenter() : layer.getLatLng(), 12));
                 layer.addTo(map);
-            } catch (e) {}
+            }
         });
 
-        document.getElementById('cityStats').innerHTML = Object.entries(cityMap)
+        // Şehir İstatistikleri (Scrollable)
+        document.getElementById('cityStats').innerHTML = Object.entries(cityCounts)
             .sort((a,b) => b[1] - a[1])
-            .map(([n, c]) => `<div class="city-item"><span>${n}</span><b>${c}</b></div>`).join('') || "Veri yok.";
-
+            .map(([c, n]) => `<div class="city-item"><span>${c}</span><b>${n}</b></div>`).join('') || "Veri yok";
+        
+        // Karar Listesi (Küçük Font)
         document.getElementById('recordList').innerHTML = filtered.map(d => `
-            <div class="record-card" style="border-left-color:${COLORS[d.kategori]}" onclick="focusTo('${d.proje_adi}')">
+            <div class="record-card" style="border-left-color:${COLORS[d.kategori]}" onclick="focusOn('${d.proje_adi}')">
                 <b>${d.proje_adi}</b>
-                <small>${d.tahmini_konum || ''} - No: ${d.karar_no || d.karar_sayisi || '-'}</small>
+                <small>${d.tahmini_konum || ''} - ${d.karar_no || d.karar_sayisi || ''}</small>
             </div>
-        `).join('') || "Liste boş.";
+        `).join('') || "Kayıt bulunamadı";
 
-        document.getElementById('statsCount').innerText = `${filtered.length} Kayıt`;
+        document.getElementById('statsCount').innerText = `${filtered.length} Aktif Kayıt`;
     }
 
-    window.focusTo = (pName) => {
-        const item = kamulastirmaData.find(x => x.proje_adi === pName);
+    window.focusOn = (name) => {
+        const item = kamulastirmaData.find(d => d.proje_adi === name);
         if(item) {
-            const isPoly = Array.isArray(item.coordinates[0]);
-            const loc = isPoly ? [item.coordinates[0][0][1], item.coordinates[0][0][0]] : [item.coordinates[1], item.coordinates[0]];
-            map.setView(loc, 12);
+            const isPolygon = Array.isArray(item.coordinates[0]);
+            const latlng = isPolygon ? [item.coordinates[0][0][1], item.coordinates[0][0][0]] : [item.coordinates[1], item.coordinates[0]];
+            map.setView(latlng, 12);
         }
     };
 
     document.getElementById('loginBtn').onclick = () => {
-        if(prompt("Admin Şifresi:") === "admin123") {
+        if(prompt("Şifre:") === "admin123") {
             document.getElementById('adminControls').classList.remove('hidden');
-            document.getElementById('logoutBtn').classList.remove('hidden');
+            document.getElementById('logoutBtn').style.display = 'inline-block';
             document.getElementById('loginBtn').classList.add('hidden');
-            const dc = new L.Control.Draw({ edit: { featureGroup: drawnItems }, draw: { circle:false, polyline:false, circlemarker:false } });
-            map.addControl(dc);
+            const drawControl = new L.Control.Draw({ edit: { featureGroup: drawnItems }, draw: { polygon: true, marker: true, rectangle:true, circle:false, polyline:false } });
+            map.addControl(drawControl);
         }
     };
 
@@ -201,15 +188,16 @@
     });
 
     document.getElementById('saveBtn').onclick = async () => {
-        const cRaw = document.getElementById('coordsInput').value;
-        if(!cRaw) return alert("Alan çizin!");
-        await dbRef.push({
+        const cVal = document.getElementById('coordsInput').value;
+        if(!cVal) return alert("Lütfen haritadan bir alan çizin!");
+        await db.push({
             proje_adi: document.getElementById('projeAdi').value,
             karar_no: document.getElementById('kararNo').value,
             tahmini_konum: document.getElementById('sehirInput').value,
-            coordinates: JSON.parse(cRaw),
+            coordinates: JSON.parse(cVal),
             kategori: document.getElementById('kategoriSelect').value
         });
+        alert("Kayıt başarıyla eklendi.");
         location.reload();
     };
 
@@ -218,23 +206,13 @@
         document.getElementById('categoryFilters').innerHTML += `<label style="display:flex;align-items:center;gap:3px;"><input type="checkbox" checked onchange="toggleCat('${c}', this.checked)"> ${c}</label>`;
         document.getElementById('kategoriSelect').innerHTML += `<option value="${c}">${c}</option>`;
     });
-    window.toggleCat = (c, s) => { s ? selectedCategories.add(c) : selectedCategories.delete(c); renderUI(); };
+    window.toggleCat = (c, s) => { s ? selectedCategories.add(c) : selectedCategories.delete(c); updateView(); };
     
-    // VERİ DİNLEME (KONTROLLÜ)
-    dbRef.on('value', snap => {
-        const val = snap.val();
-        if(val) {
-            kamulastirmaData = Object.values(val);
-            renderUI();
-            logStatus("Veri başarıyla çekildi.", false);
-            setTimeout(() => document.getElementById('status-log').style.display = 'none', 3000);
-        } else {
-            logStatus("Veritabanı şu an boş.");
-        }
-    }, err => {
-        logStatus("Veri çekme hatası: " + err.message);
-    });
-
+    db.on('value', s => { 
+        const val = s.val();
+        kamulastirmaData = val ? Object.values(val) : []; 
+        updateView(); 
+    }, e => console.error("Firebase Hatası:", e));
 </script>
 </body>
 </html>
