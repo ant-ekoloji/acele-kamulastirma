@@ -107,16 +107,21 @@
     const COLORS = { "Konut": "#2ecc71", "Altyapı": "#3498db", "Ulaşım": "#f39c12", "Enerji": "#e67e22", "Kentsel Dönüşüm": "#9b59b6", "Diğer": "#7f8c8d" };
     let map, kamulastirmaData = [], drawnItems, selectedCategories = new Set(Object.keys(COLORS));
 
-    function initMap() {
-        map = L.map('map');
-        const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-        const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}');
-        L.control.layers({ "Harita": osm, "Uydu": satellite }).addTo(map);
-        
-        // 🇹🇷 Türkiye yatay sığdırma (Paylaştığınız görseldeki kırmızı çizgiler arası)
-        map.fitBounds(L.latLngBounds(L.latLng(35.5, 25.5), L.latLng(42.5, 45.0)));
-        drawnItems = new L.FeatureGroup().addTo(map);
-    }
+   function initMap() {
+    map = L.map('map');
+
+    // Kırmızı çizgilerle belirttiğiniz yatay sınır koordinatları
+    const turkeyBounds = L.latLngBounds(
+        L.latLng(35.5, 25.5), // Güney Batı (Yatayda Ege açıkları)
+        L.latLng(42.5, 45.0)  // Kuzey Doğu (Yatayda Iğdır ötesi)
+    );
+
+    // Haritayı bu sınırlara sığdır
+    map.fitBounds(turkeyBounds);
+
+    const osmStandard = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    // Diğer katman kodlarınız...
+}
 
     function updateView() {
         if (!map) return;
