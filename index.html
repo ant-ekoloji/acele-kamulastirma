@@ -49,13 +49,12 @@
         /* Katman Kontrol Stili */
         .layer-control {
             background: white;
-            padding: 8px 12px;
+            padding: 6px 10px;
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             font-size: 0.7rem;
             display: flex;
-            gap: 12px;
-            margin-right: 10px;
+            gap: 10px;
         }
         .layer-control label {
             display: flex;
@@ -67,7 +66,6 @@
         .main-content { display: flex; flex: 1; overflow: hidden; }
         #map { flex: 3; height: 100%; background: #e9f0f5; min-height: 0; }
         
-        /* Leaflet Popup Stilleri */
         .leaflet-popup-content-wrapper {
             border-radius: 16px;
             box-shadow: 0 8px 28px rgba(0,0,0,0.15);
@@ -100,7 +98,6 @@
         .popup-info i {
             width: 20px;
             color: #3b82f6;
-            margin-top: 2px;
         }
         .popup-link {
             margin-top: 10px;
@@ -114,9 +111,6 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-        }
-        .popup-link a:hover {
-            text-decoration: underline;
         }
         
         .sidebar { 
@@ -160,7 +154,6 @@
             background: #f8fafc;
             border: 1px solid #e2e8f0;
         }
-        .filter-group label:hover { background: #f1f5f9; }
         .filter-group label span { 
             display: inline-block; 
             width: 8px; 
@@ -195,74 +188,28 @@
             cursor: pointer;
             position: relative;
         }
-        .record-card:hover { 
-            transform: translateX(2px);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        }
-        .record-card b { 
-            display: block; 
-            font-size: 0.8rem; 
-            color: #1e293b; 
-            font-weight: 500;
-        }
-        .record-card small { 
-            font-size: 0.65rem; 
-            color: #64748b;
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-        .record-card .category-badge { 
-            display: inline-block; 
-            padding: 2px 6px; 
-            border-radius: 12px; 
-            font-size: 0.6rem; 
-            margin-top: 4px;
-        }
+        .record-card:hover { transform: translateX(2px); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .record-card b { display: block; font-size: 0.8rem; color: #1e293b; font-weight: 500; }
+        .record-card small { font-size: 0.65rem; color: #64748b; display: flex; gap: 8px; flex-wrap: wrap; }
+        .record-card .category-badge { display: inline-block; padding: 2px 6px; border-radius: 12px; font-size: 0.6rem; margin-top: 4px; }
         .delete-record { 
-            position: absolute; 
-            right: 8px; 
-            top: 8px; 
-            background: none; 
-            border: none; 
-            color: #cbd5e1;
-            cursor: pointer;
-            opacity: 0;
-            font-size: 11px;
+            position: absolute; right: 8px; top: 8px; background: none; border: none; 
+            color: #cbd5e1; cursor: pointer; opacity: 0; font-size: 11px;
         }
         .record-card:hover .delete-record { opacity: 1; }
         .delete-record:hover { color: #ef4444; }
         
-        .admin-section { 
-            background: #fffaf0;
-            padding: 12px; 
-            border-radius: 12px; 
-            border: 1px solid #fed7aa;
-        }
-        input, select { 
-            width: 100%; 
-            padding: 8px; 
-            margin: 4px 0; 
-            border: 1px solid #e2e8f0; 
-            border-radius: 8px; 
-            font-size: 0.75rem;
-        }
+        .admin-section { background: #fffaf0; padding: 12px; border-radius: 12px; border: 1px solid #fed7aa; }
+        input, select { width: 100%; padding: 8px; margin: 4px 0; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.75rem; }
         .btn { 
-            border: none; 
-            padding: 6px 12px; 
-            border-radius: 8px; 
-            cursor: pointer; 
-            font-weight: 500; 
-            font-size: 0.7rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
+            border: none; padding: 6px 12px; border-radius: 8px; cursor: pointer; 
+            font-weight: 500; font-size: 0.7rem; display: inline-flex; align-items: center; gap: 6px;
         }
         .btn-primary { background: #3498db; color: white; }
         .btn-success { background: #10b981; color: white; }
         .btn-warning { background: #f59e0b; color: white; }
         .btn-danger { background: #ef4444; color: white; }
-        .btn-sm { padding: 4px 10px; font-size: 0.7rem; }
+        .btn-sm { padding: 4px 10px; }
         .hidden { display: none !important; }
         
         .info-note { font-size: 0.65rem; color: #64748b; text-align: center; margin-top: 6px; padding: 5px; background: #f8fafc; border-radius: 6px; }
@@ -284,8 +231,10 @@
             background: white;
             padding: 20px;
             border-radius: 16px;
-            max-width: 500px;
+            max-width: 550px;
             width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
         }
         .modal-header {
             display: flex;
@@ -293,6 +242,13 @@
             margin-bottom: 15px;
             padding-bottom: 10px;
             border-bottom: 1px solid #e2e8f0;
+        }
+        .file-info {
+            background: #f1f5f9;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.7rem;
+            margin: 10px 0;
         }
         
         @media (max-width: 768px) { 
@@ -360,13 +316,18 @@
             <h3><i class="fas fa-file-upload"></i> JSON/GeoJSON Yükle</h3>
             <button class="btn btn-sm" onclick="closeFileModal()" style="background:#ef4444; color:white;">✖</button>
         </div>
-        <input type="file" id="jsonFileInput" accept=".json,.geojson">
-        <div class="info-note" style="margin-top:10px;">
-            <strong>Desteklenen Format:</strong><br>
-            • JSON: [{"proje_adi":"...","coordinates":[lng,lat],"kategori":"...","tahmini_konum":"..."}]<br>
-            • GeoJSON: {"type":"FeatureCollection","features":[...]}
+        <input type="file" id="jsonFileInput" accept=".json,.geojson,.txt">
+        <div class="file-info" id="filePreview" style="display:none;">
+            <strong>📄 Dosya içeriği:</strong><br>
+            <pre id="fileContentPreview" style="max-height:150px; overflow:auto; font-size:10px;"></pre>
         </div>
-        <button class="btn btn-success" id="processFileBtn" style="width:100%; margin-top:10px;"><i class="fas fa-check"></i> İçe Aktar</button>
+        <div class="info-note" style="margin-top:10px;">
+            <strong>📌 Desteklenen Formatlar:</strong><br>
+            • <strong>JSON Dizi:</strong> [{"proje_adi":"...","coordinates":[lng,lat],"kategori":"...","tahmini_konum":"..."}]<br>
+            • <strong>GeoJSON:</strong> {"type":"FeatureCollection","features":[...]}<br>
+            • <strong>Zorunlu alanlar:</strong> proje_adi, coordinates, kategori, tahmini_konum
+        </div>
+        <button class="btn btn-success" id="processFileBtn" style="width:100%; margin-top:12px;"><i class="fas fa-check"></i> İçe Aktar</button>
     </div>
 </div>
 
@@ -391,7 +352,7 @@
     try {
         firebase.initializeApp(firebaseConfig);
         database = firebase.database().ref("kamulastirma");
-        console.log("✅ Firebase bağlantısı başarılı - GERÇEK ZAMANLI SENKRONİZASYON AKTİF");
+        console.log("✅ Firebase bağlantısı başarılı");
     } catch (error) {
         console.error("❌ Firebase hatası:", error);
     }
@@ -412,14 +373,13 @@
     };
     let currentLayer = 'sokak';
     
-    // ==================== GLOBAL DEĞİŞKENLER ====================
+    // ==================== GLOBAL ====================
     let map, drawnItems;
     let kamulastirmaData = [];
     let selectedCategories = new Set(Object.keys(COLORS));
     let isAdminMode = false;
     let drawControl = null;
     
-    // Resmî Gazete linki
     function getResmiGazeteLink(kararNo) {
         if (!kararNo || kararNo === "Belirtilmemiş") return "#";
         return `https://www.resmigazete.gov.tr/eskiler/ara.php?q=${encodeURIComponent(kararNo)}`;
@@ -430,7 +390,6 @@
         map = L.map('map').setView([39.0, 35.0], 6);
         mapLayers.sokak.addTo(map);
         
-        // Katman kontrolü - Sağ üst köşede
         const layerControlDiv = L.Control.extend({
             options: { position: 'topright' },
             onAdd: function() {
@@ -458,7 +417,6 @@
         map.addLayer(drawnItems);
         map.fitBounds([[35.5, 25.5], [42.5, 45.0]]);
         
-        // Çizim olayı
         map.on(L.Draw.Event.CREATED, (e) => {
             if (!isAdminMode) return;
             drawnItems.clearLayers();
@@ -479,9 +437,8 @@
     function updateView() {
         if (!map) return;
         
-        // Temizle
         map.eachLayer(layer => {
-            if (layer !== drawnItems && !(layer instanceof L.TileLayer) && !layer._container?.classList?.contains('layer-control')) {
+            if (layer !== drawnItems && !(layer instanceof L.TileLayer) && layer._container?.className !== 'layer-control') {
                 map.removeLayer(layer);
             }
         });
@@ -539,10 +496,8 @@
             } catch(err) {}
         });
         
-        // İstatistikler
         document.getElementById('cityStats').innerHTML = Object.entries(cityStats).sort((a,b)=>b[1]-a[1]).map(([c,n])=>`<div class="city-item"><span>${c}</span><strong>${n}</strong></div>`).join('') || 'Veri yok';
         
-        // Liste
         const listHtml = filtered.map(item => `
             <div class="record-card" style="border-left-color: ${COLORS[item.kategori] || '#94a3b8'}">
                 ${isAdminMode ? `<button class="delete-record" onclick="deleteRecord('${item.proje_adi?.replace(/'/g, "\\'")}', event)"><i class="fas fa-trash"></i></button>` : ''}
@@ -597,25 +552,52 @@
         });
     }
     
-    // ==================== DOSYA YÜKLEME (JSON/GeoJSON) ====================
+    // ==================== GELİŞMİŞ DOSYA YÜKLEME ====================
+    function cleanJsonString(str) {
+        // BOM karakterini temizle
+        if (str.charCodeAt(0) === 0xFEFF) {
+            str = str.slice(1);
+        }
+        // Baştaki ve sondaki boşlukları temizle
+        str = str.trim();
+        return str;
+    }
+    
     function processJsonFile(file) {
         const reader = new FileReader();
         reader.onload = function(e) {
             try {
-                const data = JSON.parse(e.target.result);
-                let imported = 0;
+                let rawContent = e.target.result;
+                rawContent = cleanJsonString(rawContent);
                 
-                // GeoJSON formatı kontrolü
-                if (data.type === "FeatureCollection") {
+                console.log("Dosya içeriği (ilk 200 karakter):", rawContent.substring(0, 200));
+                
+                let data;
+                try {
+                    data = JSON.parse(rawContent);
+                } catch(parseErr) {
+                    // JSON hata detayını göster
+                    throw new Error(`JSON ayrıştırılamadı: ${parseErr.message}\nİlk 100 karakter: ${rawContent.substring(0, 100)}`);
+                }
+                
+                let imported = 0;
+                let itemsToImport = [];
+                
+                // GeoJSON formatı
+                if (data.type === "FeatureCollection" && Array.isArray(data.features)) {
                     data.features.forEach(feature => {
                         const props = feature.properties;
                         const geom = feature.geometry;
                         let coords = null;
-                        if (geom.type === "Point") coords = [geom.coordinates[0], geom.coordinates[1]];
-                        else if (geom.type === "Polygon") coords = geom.coordinates[0].map(c => [c[0], c[1]]);
+                        
+                        if (geom.type === "Point" && geom.coordinates) {
+                            coords = [geom.coordinates[0], geom.coordinates[1]];
+                        } else if (geom.type === "Polygon" && geom.coordinates && geom.coordinates[0]) {
+                            coords = geom.coordinates[0].map(c => [c[0], c[1]]);
+                        }
                         
                         if (props.proje_adi && coords && props.kategori && props.tahmini_konum) {
-                            database.push({
+                            itemsToImport.push({
                                 proje_adi: props.proje_adi,
                                 karar_no: props.karar_no || "Belirtilmemiş",
                                 karar_tarihi: props.karar_tarihi || "",
@@ -624,34 +606,59 @@
                                 kategori: props.kategori,
                                 import_tarihi: new Date().toISOString()
                             });
-                            imported++;
-                        }
-                    });
-                } 
-                // JSON formatı
-                else if (Array.isArray(data)) {
-                    data.forEach(item => {
-                        if (item.proje_adi && item.coordinates && item.kategori && item.tahmini_konum) {
-                            database.push({
-                                proje_adi: item.proje_adi,
-                                karar_no: item.karar_no || "Belirtilmemiş",
-                                karar_tarihi: item.karar_tarihi || "",
-                                tahmini_konum: item.tahmini_konum,
-                                coordinates: item.coordinates,
-                                kategori: item.kategori,
-                                import_tarihi: new Date().toISOString()
-                            });
-                            imported++;
                         }
                     });
                 }
-                alert(`✅ ${imported} kayıt içe aktarıldı!`);
-                setTimeout(() => location.reload(), 1000);
-            } catch(err) {
-                alert("❌ Dosya okunamadı: " + err.message);
+                // JSON Dizi formatı
+                else if (Array.isArray(data)) {
+                    itemsToImport = data.filter(item => 
+                        item.proje_adi && item.coordinates && item.kategori && item.tahmini_konum
+                    ).map(item => ({
+                        proje_adi: item.proje_adi,
+                        karar_no: item.karar_no || "Belirtilmemiş",
+                        karar_tarihi: item.karar_tarihi || "",
+                        tahmini_konum: item.tahmini_konum,
+                        coordinates: item.coordinates,
+                        kategori: item.kategori,
+                        import_tarihi: new Date().toISOString()
+                    }));
+                }
+                // Tek obje formatı
+                else if (data.proje_adi && data.coordinates && data.kategori && data.tahmini_konum) {
+                    itemsToImport = [{
+                        proje_adi: data.proje_adi,
+                        karar_no: data.karar_no || "Belirtilmemiş",
+                        karar_tarihi: data.karar_tarihi || "",
+                        tahmini_konum: data.tahmini_konum,
+                        coordinates: data.coordinates,
+                        kategori: data.kategori,
+                        import_tarihi: new Date().toISOString()
+                    }];
+                }
+                
+                if (itemsToImport.length === 0) {
+                    throw new Error("Geçerli kayıt bulunamadı. Zorunlu alanlar: proje_adi, coordinates, kategori, tahmini_konum");
+                }
+                
+                // Firebase'e kaydet
+                let saved = 0;
+                itemsToImport.forEach(item => {
+                    database.push(item);
+                    saved++;
+                });
+                
+                alert(`✅ ${saved} kayıt başarıyla içe aktarıldı!\nSayfa yenileniyor...`);
+                setTimeout(() => location.reload(), 1500);
+                
+            } catch (err) {
+                console.error("Dosya işleme hatası:", err);
+                alert(`❌ Dosya okunamadı:\n${err.message}\n\nDosyanın geçerli JSON formatında olduğundan emin olun.`);
             }
         };
-        reader.readAsText(file);
+        reader.onerror = function() {
+            alert("❌ Dosya okunurken hata oluştu!");
+        };
+        reader.readAsText(file, "UTF-8");
     }
     
     // ==================== DIŞA AKTAR ====================
@@ -664,6 +671,17 @@
         a.click();
         URL.revokeObjectURL(a.href);
         alert(`✅ ${kamulastirmaData.length} kayıt dışa aktarıldı`);
+    }
+    
+    // ==================== DOSYA ÖNİZLEME ====================
+    function previewFile(file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            let content = e.target.result.substring(0, 500);
+            document.getElementById('fileContentPreview').textContent = content + (e.target.result.length > 500 ? "\n... (devam ediyor)" : "");
+            document.getElementById('filePreview').style.display = 'block';
+        };
+        reader.readAsText(file);
     }
     
     // ==================== ADMIN PANELİ ====================
@@ -707,7 +725,14 @@
             drawnItems.clearLayers();
         };
         document.getElementById('exportBtn').onclick = () => exportData();
-        document.getElementById('importFileBtn').onclick = () => document.getElementById('fileModal').style.display = 'flex';
+        document.getElementById('importFileBtn').onclick = () => {
+            document.getElementById('fileModal').style.display = 'flex';
+            document.getElementById('filePreview').style.display = 'none';
+            document.getElementById('jsonFileInput').value = '';
+        };
+        document.getElementById('jsonFileInput').onchange = (e) => {
+            if (e.target.files[0]) previewFile(e.target.files[0]);
+        };
         document.getElementById('processFileBtn').onclick = () => {
             const file = document.getElementById('jsonFileInput').files[0];
             if (file) processJsonFile(file);
@@ -718,13 +743,13 @@
     function closeFileModal() { document.getElementById('fileModal').style.display = 'none'; }
     window.closeFileModal = closeFileModal;
     
-    // ==================== FIREBASE GERÇEK ZAMANLI DİNLEME ====================
+    // ==================== FIREBASE GERÇEK ZAMANLI ====================
     function listenFirebase() {
         if (!database) return;
         database.on('value', (snapshot) => {
             const data = snapshot.val();
             kamulastirmaData = data ? Object.entries(data).map(([id, val]) => ({ id, ...val })) : [];
-            console.log(`📡 GERÇEK ZAMANLI GÜNCELLEME: ${kamulastirmaData.length} kayıt`);
+            console.log(`📡 GERÇEK ZAMANLI: ${kamulastirmaData.length} kayıt`);
             updateView();
         });
     }
