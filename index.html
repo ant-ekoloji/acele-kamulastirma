@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Acele Kamulaştırma Portalı | Estetik Sürüm</title>
+    <title>Acele Kamulaştırma Portalı | Tam Sürüm</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css"/>
@@ -51,6 +51,86 @@
         .main-content { display: flex; flex: 1; overflow: hidden; }
         #map { flex: 3; height: 100%; background: #e9f0f5; min-height: 0; }
         
+        /* Leaflet Popup Stilleri - OKUNABİLİR VE ZENGİN İÇERİK */
+        .leaflet-popup-content-wrapper {
+            border-radius: 16px;
+            box-shadow: 0 8px 28px rgba(0,0,0,0.15);
+            padding: 4px;
+        }
+        .leaflet-popup-content {
+            color: #1e293b !important;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            line-height: 1.5;
+            min-width: 260px;
+            margin: 12px 16px;
+        }
+        .leaflet-popup-content strong {
+            color: #0f172a !important;
+            font-weight: 600;
+        }
+        .popup-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .popup-info {
+            margin: 8px 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        .popup-info i {
+            width: 20px;
+            color: #3b82f6;
+            margin-top: 2px;
+        }
+        .popup-info span {
+            flex: 1;
+            color: #334155;
+        }
+        .popup-link {
+            margin-top: 12px;
+            padding-top: 8px;
+            border-top: 1px solid #e2e8f0;
+        }
+        .popup-link a {
+            color: #3b82f6 !important;
+            text-decoration: none;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+        .popup-link a:hover {
+            color: #1e40af !important;
+            text-decoration: underline;
+        }
+        
+        /* Harita kontrol butonları */
+        .leaflet-control-zoom a,
+        .leaflet-control-draw a {
+            background: white !important;
+            color: #1e293b !important;
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 8px !important;
+            transition: all 0.2s ease;
+        }
+        .leaflet-control-zoom a:hover,
+        .leaflet-control-draw a:hover {
+            background: #f8fafc !important;
+            color: #0f172a !important;
+            border-color: #cbd5e1 !important;
+        }
+        
+        /* Sidebar stilleri */
         .sidebar { 
             flex: 1; 
             background: white; 
@@ -186,6 +266,11 @@
             margin-top: 6px;
             font-weight: 500;
             letter-spacing: -0.2px;
+        }
+        .record-card .record-date {
+            font-size: 0.65rem;
+            color: #3b82f6;
+            margin-left: 4px;
         }
         .delete-record { 
             position: absolute; 
@@ -380,6 +465,7 @@
                 <input type="text" id="projeAdi" placeholder="Proje Adı *">
                 <input type="text" id="kararNo" placeholder="Karar No / Sayısı">
                 <input type="text" id="sehirInput" placeholder="İl *">
+                <input type="date" id="kararTarihi" placeholder="Karar Tarihi">
                 <input type="text" id="coordsInput" placeholder="Koordinat (Haritadan çizin)" readonly style="background:#f8fafc;">
                 <select id="kategoriSelect"></select>
                 <button class="btn btn-primary" id="saveBtn" style="width:100%; margin-top:8px;"><i class="fas fa-save"></i> KAYDET</button>
@@ -396,7 +482,7 @@
             <h3><i class="fas fa-upload"></i> JSON İçe Aktar</h3>
             <button class="btn btn-sm" onclick="closeModal()" style="background:#ef4444; color:white; padding:4px 12px;">✖</button>
         </div>
-        <textarea id="importJsonData" rows="10" placeholder='[{"proje_adi":"Örnek Proje","karar_no":"2023/001","tahmini_konum":"İstanbul","coordinates":[28.95,41.05],"kategori":"Konut"}]' style="width:100%; font-size:12px; font-family: monospace;"></textarea>
+        <textarea id="importJsonData" rows="10" placeholder='[{"proje_adi":"Örnek Proje","karar_no":"2023/001","karar_tarihi":"2023-01-15","tahmini_konum":"İstanbul","coordinates":[28.95,41.05],"kategori":"Konut"}]' style="width:100%; font-size:12px; font-family: monospace;"></textarea>
         <button class="btn btn-success" id="doImportBtn" style="width:100%; margin-top:12px;"><i class="fas fa-check"></i> İçe Aktar</button>
         <div class="info-note" style="margin-top:10px;">JSON formatında veri yapıştırın. Her kayıt proje_adi, tahmini_konum, coordinates, kategori içermelidir.</div>
     </div>
@@ -447,6 +533,13 @@
     let selectedCategories = new Set(Object.keys(COLORS));
     let isAdminMode = false;
     let drawControl = null;
+    
+    // Resmî Gazete arama linki oluştur
+    function getResmiGazeteLink(kararNo) {
+        if (!kararNo || kararNo === "Belirtilmemiş") return "#";
+        // Resmî Gazete arama motoru linki
+        return `https://www.resmigazete.gov.tr/eskiler/ara.php?q=${encodeURIComponent(kararNo)}`;
+    }
     
     function initMap() {
         map = L.map('map').setView([39.0, 35.0], 6);
@@ -508,17 +601,47 @@
                         const lat = coords[1], lng = coords[0];
                         if (lat && lng && !isNaN(lat) && !isNaN(lng)) {
                             marker = L.circleMarker([lat, lng], {
-                                radius: 6,
+                                radius: 7,
                                 fillColor: COLORS[item.kategori] || "#94a3b8",
                                 color: "#fff",
-                                weight: 1.5,
+                                weight: 2,
                                 fillOpacity: 0.85
                             });
                         }
                     }
                 }
                 if (marker) {
-                    marker.bindPopup(`<div style="min-width:180px"><strong>🏗️ ${item.proje_adi || 'İsimsiz'}</strong><br>📄 ${item.karar_no || 'Karar yok'}<br>📍 ${item.tahmini_konum || '?'}<br>🏷️ ${item.kategori}</div>`);
+                    const rgLink = getResmiGazeteLink(item.karar_no);
+                    const tarihHtml = item.karar_tarihi ? `<div class="popup-info"><i class="far fa-calendar-alt"></i><span>📅 Karar Tarihi: ${item.karar_tarihi}</span></div>` : '';
+                    
+                    // Zengin popup içeriği - TÜM BİLGİLERLE
+                    marker.bindPopup(`
+                        <div>
+                            <div class="popup-title">
+                                <i class="fas fa-building" style="color: #3b82f6;"></i>
+                                <strong>${item.proje_adi || 'İsimsiz Proje'}</strong>
+                            </div>
+                            <div class="popup-info">
+                                <i class="fas fa-hashtag"></i>
+                                <span><strong>Karar No:</strong> ${item.karar_no || 'Belirtilmemiş'}</span>
+                            </div>
+                            ${tarihHtml}
+                            <div class="popup-info">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span><strong>İl:</strong> ${item.tahmini_konum || 'Belirtilmemiş'}</span>
+                            </div>
+                            <div class="popup-info">
+                                <i class="fas fa-tag"></i>
+                                <span><strong>Kategori:</strong> <span style="color: ${COLORS[item.kategori] || '#64748b'}; font-weight: 500;">${item.kategori}</span></span>
+                            </div>
+                            ${item.eklenme_tarihi ? `<div class="popup-info"><i class="far fa-clock"></i><span><strong>Kayıt Tarihi:</strong> ${new Date(item.eklenme_tarihi).toLocaleDateString('tr-TR')}</span></div>` : ''}
+                            <div class="popup-link">
+                                <a href="${rgLink}" target="_blank" rel="noopener noreferrer">
+                                    <i class="fas fa-external-link-alt"></i> Resmî Gazete'de Ara
+                                </a>
+                            </div>
+                        </div>
+                    `);
                     marker.on('click', () => {
                         const center = marker.getBounds ? marker.getBounds().getCenter() : marker.getLatLng();
                         map.setView(center, 12);
@@ -530,14 +653,20 @@
         
         document.getElementById('cityStats').innerHTML = Object.entries(cityStats).sort((a,b) => b[1]-a[1]).map(([c,n]) => `<div class="city-item"><span>${c}</span><strong>${n}</strong></div>`).join('') || '<div style="text-align:center; padding:10px;">Veri yok</div>';
         
-        const listHtml = filtered.map(item => `
+        // Liste görünümü - Karar no ve tarih de dahil
+        const listHtml = filtered.map(item => {
+            const tarihGoster = item.karar_tarihi ? ` • ${item.karar_tarihi}` : '';
+            return `
             <div class="record-card" style="border-left-color: ${COLORS[item.kategori] || '#94a3b8'}">
                 <button class="delete-record" onclick="deleteRecord('${item.proje_adi?.replace(/'/g, "\\'")}', event)"><i class="fas fa-trash-alt"></i></button>
                 <b onclick="focusToProject('${(item.proje_adi || '').replace(/'/g, "\\'")}')">${item.proje_adi || 'İsimsiz Proje'}</b>
-                <small onclick="focusToProject('${(item.proje_adi || '').replace(/'/g, "\\'")}')"><i class="far fa-map-marker-alt"></i> ${item.tahmini_konum || '?'}  •  <i class="far fa-file-alt"></i> ${item.karar_no || 'Karar yok'}</small>
+                <small onclick="focusToProject('${(item.proje_adi || '').replace(/'/g, "\\'")}')">
+                    <i class="far fa-map-marker-alt"></i> ${item.tahmini_konum || '?'}
+                    <i class="fas fa-hashtag" style="margin-left: 6px;"></i> ${item.karar_no || 'Karar yok'}${tarihGoster}
+                </small>
                 <div class="category-badge" style="background: ${COLORS[item.kategori] || '#94a3b8'}15; color: ${COLORS[item.kategori] || '#64748b'}">${item.kategori}</div>
             </div>
-        `).join('');
+        `}).join('');
         
         document.getElementById('recordList').innerHTML = listHtml || '<div style="text-align:center; padding:30px;">📭 Kayıt bulunamadı</div>';
         document.getElementById('statsCount').innerHTML = `<i class="fas fa-chart-line"></i> ${filtered.length} / ${kamulastirmaData.length}`;
@@ -611,6 +740,7 @@
                     database.push({
                         proje_adi: item.proje_adi,
                         karar_no: item.karar_no || "Belirtilmemiş",
+                        karar_tarihi: item.karar_tarihi || "",
                         tahmini_konum: item.tahmini_konum,
                         coordinates: item.coordinates,
                         kategori: item.kategori,
@@ -626,7 +756,8 @@
     
     function setupAdminPanel() {
         document.getElementById('loginBtn').onclick = () => {
-            if (prompt("Admin şifresi:") === "admin123") {
+            const pwd = prompt("Admin şifresi:");
+            if (pwd === "admin123") {
                 isAdminMode = true;
                 document.getElementById('adminControls').classList.remove('hidden');
                 document.getElementById('loginBtn').style.display = 'none';
@@ -647,14 +778,16 @@
             await database.push({
                 proje_adi: proje,
                 karar_no: document.getElementById('kararNo').value.trim() || "Belirtilmemiş",
+                karar_tarihi: document.getElementById('kararTarihi').value || "",
                 tahmini_konum: sehir,
                 coordinates: JSON.parse(coords),
                 kategori: document.getElementById('kategoriSelect').value,
-                eklenme: new Date().toISOString()
+                eklenme_tarihi: new Date().toISOString()
             });
             alert("✅ Kaydedildi!");
             document.getElementById('projeAdi').value = "";
             document.getElementById('kararNo').value = "";
+            document.getElementById('kararTarihi').value = "";
             document.getElementById('sehirInput').value = "";
             document.getElementById('coordsInput').value = "";
             drawnItems.clearLayers();
