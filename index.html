@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Acele Kamulaştırma Haritası | v5</title>
+    <title>Acele Kamulaştırma Haritası | Kararlı Sürüm</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css"/>
@@ -13,41 +13,48 @@
 
     <style>
         * { box-sizing: border-box; }
-        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; background: #f4f7fa; }
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; background: #f4f7fa; color: #333; }
         .app-container { display: flex; flex-direction: column; height: 100vh; }
-        .toolbar { background: #1e2a3a; color: white; padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; z-index: 1000; }
+        .toolbar { background: #1e2a3a; color: white; padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         .main-content { display: flex; flex: 1; overflow: hidden; }
-        #map { flex: 3; height: 100%; }
+        #map { flex: 3; height: 100%; background: #e5e5e5; }
         
-        .sidebar { flex: 1; background: white; border-left: 1px solid #ccc; overflow-y: auto; padding: 15px; min-width: 300px; display: flex; flex-direction: column; gap: 12px; }
-        h4 { margin: 0 0 5px 0; font-size: 0.9rem; border-bottom: 2px solid #3498db; display: inline-block; color: #2c3e50; }
+        /* Sidebar Yapısı */
+        .sidebar { flex: 1; background: white; border-left: 1px solid #ccc; overflow-y: auto; padding: 12px; min-width: 300px; display: flex; flex-direction: column; gap: 12px; }
+        h4 { margin: 0 0 5px 0; font-size: 0.85rem; border-bottom: 2px solid #3498db; display: inline-block; color: #1e2a3a; text-transform: uppercase; letter-spacing: 0.5px; }
 
-        .filter-section { background: #f8f9fa; padding: 8px; border-radius: 6px; border: 1px solid #ddd; }
+        /* Bölümler */
+        .section-box { background: #f9fbff; padding: 8px; border-radius: 6px; border: 1px solid #e1e8ef; }
         .filter-group { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; font-size: 0.7rem; }
+        
+        .stats-panel { max-height: 120px; overflow-y: auto; background: #fff; border: 1px solid #ddd; padding: 5px; border-radius: 4px; }
+        .city-item { display: flex; justify-content: space-between; font-size: 0.75rem; padding: 3px 5px; border-bottom: 1px solid #eee; }
+        .city-item:last-child { border: none; }
 
-        .stats-panel { background: #f1f4f9; border-radius: 6px; padding: 6px; border: 1px solid #d1d9e6; max-height: 120px; overflow-y: auto; }
-        .city-item { display: flex; justify-content: space-between; font-size: 0.75rem; padding: 3px 0; border-bottom: 1px solid #e0e6ed; }
+        /* Karar Listesi (Küçük Font & Zarif) */
+        .list-container { flex: 1; overflow-y: auto; }
+        .record-card { background: #fff; border-left: 3px solid #3498db; padding: 6px 8px; margin-bottom: 6px; border-radius: 4px; border-top: 1px solid #eee; border-right: 1px solid #eee; border-bottom: 1px solid #eee; cursor: pointer; transition: 0.2s; }
+        .record-card:hover { background: #f0f7ff; border-left-width: 6px; }
+        .record-card b { display: block; font-weight: 500; font-size: 0.75rem; color: #2c3e50; line-height: 1.2; margin-bottom: 2px; }
+        .record-card small { font-size: 0.65rem; color: #7f8c8d; display: block; }
 
-        .record-list-container { flex: 1; overflow-y: auto; }
-        .record-card { background: #fff; border-left: 4px solid #3498db; padding: 6px; margin-bottom: 6px; border-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); cursor: pointer; }
-        .record-card b { display: block; font-weight: 500; font-size: 0.75rem; color: #2c3e50; line-height: 1.2; }
-        .record-card small { font-size: 0.65rem; color: #666; }
-
-        .admin-section { background: #fff3e0; padding: 10px; border-radius: 6px; border: 1px dashed #fb8c00; font-size: 0.75rem; }
+        /* Formlar */
+        .admin-box { background: #fff3e0; padding: 10px; border-radius: 6px; border: 1px dashed #fb8c00; }
         input, select { width: 100%; padding: 5px; margin: 3px 0; border: 1px solid #ccc; border-radius: 4px; font-size: 0.75rem; }
-        .btn { border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.75rem; }
+        .btn { border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.75rem; transition: 0.2s; }
         .btn-blue { background: #3498db; color: white; }
+        .btn-blue:hover { background: #2980b9; }
         .hidden { display: none !important; }
         
-        @media (max-width: 768px) { .main-content { flex-direction: column; } .sidebar { max-height: 50%; } }
+        @media (max-width: 768px) { .main-content { flex-direction: column; } .sidebar { max-height: 50%; width: 100%; border-left: none; border-top: 1px solid #ccc; } }
     </style>
 </head>
 <body>
 
 <div class="app-container">
     <div class="toolbar">
-        <h4 style="color:white; border:none; margin:0">🏗️ Kamulaştırma Portalı</h4>
-        <div id="statsCount" style="font-size:0.75rem">Bağlanıyor...</div>
+        <h3 style="margin:0; font-size:1rem; letter-spacing:1px;">ACELE KAMULAŞTIRMA</h3>
+        <div id="statsCount" style="font-size:0.75rem; opacity:0.9;">Yükleniyor...</div>
         <div>
             <button class="btn btn-blue" id="loginBtn">🔐 Admin</button>
             <button class="btn" id="logoutBtn" style="background:#e74c3c; color:white;" class="hidden" onclick="location.reload()">Çıkış</button>
@@ -57,29 +64,29 @@
     <div class="main-content">
         <div id="map"></div>
         <div class="sidebar">
-            <div class="filter-section">
-                <h4>🔍 Filtrele</h4>
+            <div class="section-box">
+                <h4>🔍 Kategoriler</h4>
                 <div id="categoryFilters" class="filter-group"></div>
             </div>
 
-            <div>
-                <h4>📊 Şehir İstatistikleri</h4>
+            <div class="section-box">
+                <h4>📊 Şehir Bazlı Dağılım</h4>
                 <div id="cityStats" class="stats-panel">Veri bekleniyor...</div>
             </div>
 
-            <div class="record-list-container">
-                <h4>📌 Karar Listesi</h4>
+            <div class="list-container">
+                <h4>📌 Karar Kayıtları</h4>
                 <div id="recordList"></div>
             </div>
 
-            <div id="adminControls" class="admin-section hidden">
-                <h4>✍️ Yönetici Paneli</h4>
-                <input type="text" id="projeAdi" placeholder="Proje Adı">
-                <input type="text" id="kararNo" placeholder="Karar No">
-                <input type="text" id="sehirInput" placeholder="İl">
-                <input type="text" id="coordsInput" placeholder="Koordinat (Çizimle dolar)">
+            <div id="adminControls" class="admin-box hidden">
+                <h4>✍️ Yeni Veri Girişi</h4>
+                <input type="text" id="projeAdi" placeholder="Proje İsmi">
+                <input type="text" id="kararNo" placeholder="Karar Sayısı">
+                <input type="text" id="sehirInput" placeholder="Şehir (Örn: Antalya)">
+                <input type="text" id="coordsInput" placeholder="Koordinat (Haritadan çizin)" readonly>
                 <select id="kategoriSelect"></select>
-                <button class="btn btn-blue" style="width:100%; margin-top:5px;" id="saveBtn">💾 Kaydet</button>
+                <button class="btn btn-blue" style="width:100%; margin-top:5px;" id="saveBtn">💾 Sisteme Kaydet</button>
             </div>
         </div>
     </div>
@@ -89,6 +96,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
 
 <script>
+    // Firebase Yapılandırması
     const firebaseConfig = {
         apiKey: "AIzaSyCfrZFOzg_an5WBFARS_1cB4Q3pfRguz8E",
         authDomain: "acele-kumulastirma.firebaseapp.com",
@@ -102,115 +110,149 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database().ref("kamulastirma");
 
-    const COLORS = { "Konut": "#2ecc71", "Altyapı": "#3498db", "Ulaşım": "#f39c12", "Enerji": "#e67e22", "Kentsel Dönüşüm": "#9b59b6", "Diğer": "#7f8c8d" };
-    let map, kamulastirmaData = [], drawnItems, selectedCategories = new Set(Object.keys(COLORS));
+    const CATEGORY_COLORS = { "Konut": "#2ecc71", "Altyapı": "#3498db", "Ulaşım": "#f39c12", "Enerji": "#e67e22", "Kentsel Dönüşüm": "#9b59b6", "Diğer": "#7f8c8d" };
+    let map, kamulastirmaData = [], drawnItems, selectedCategories = new Set(Object.keys(CATEGORY_COLORS));
 
     function initMap() {
-        map = L.map('map');
-        const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-        const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}');
-        L.control.layers({ "Harita": osm, "Uydu": satellite }).addTo(map);
+        map = L.map('map', { zoomControl: true });
+        const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OSM' }).addTo(map);
+        const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: '© Esri' });
         
-        map.fitBounds(L.latLngBounds(L.latLng(35.5, 25.5), L.latLng(42.5, 45.0)));
+        L.control.layers({ "Standart": osm, "Uydu": satellite }, null, { position: 'topleft' }).addTo(map);
+        
+        // Türkiye yatay odak
+        map.fitBounds(L.latLngBounds(L.latLng(35.8, 25.5), L.latLng(42.5, 45.0)));
         drawnItems = new L.FeatureGroup().addTo(map);
     }
 
-    function updateView() {
+    function renderData() {
         if (!map) return;
-        map.eachLayer(l => { if(!!l.toGeoJSON && l !== drawnItems) map.removeLayer(l); });
         
+        // Temizlik: Sadece veri katmanlarını sil
+        map.eachLayer(layer => {
+            if (layer instanceof L.CircleMarker || layer instanceof L.GeoJSON) {
+                map.removeLayer(layer);
+            }
+        });
+
         const filtered = kamulastirmaData.filter(d => selectedCategories.has(d.kategori));
         const cityCounts = {};
 
         filtered.forEach(d => {
-            const city = d.tahmini_konum || "Diğer";
+            if (!d.coordinates) return;
+
+            // Şehir sayacı
+            const city = d.tahmini_konum || "Belirtilmemiş";
             cityCounts[city] = (cityCounts[city] || 0) + 1;
 
             let layer;
-            if(Array.isArray(d.coordinates[0])) { 
+            // Poligon mu Nokta mı kontrolü
+            const isPolygon = Array.isArray(d.coordinates[0]);
+
+            if (isPolygon) {
                 layer = L.geoJSON({ type: "Feature", geometry: { type: "Polygon", coordinates: d.coordinates } }, {
-                    style: { color: COLORS[d.kategori], weight: 2, fillOpacity: 0.4 }
+                    style: { color: CATEGORY_COLORS[d.kategori] || "#333", weight: 2, fillOpacity: 0.4 }
                 });
-            } else { 
-                layer = L.circleMarker([d.coordinates[1], d.coordinates[0]], { radius: 6, fillColor: COLORS[d.kategori], color: "#000", weight:1, fillOpacity: 0.8 });
+            } else {
+                layer = L.circleMarker([d.coordinates[1], d.coordinates[0]], {
+                    radius: 7, fillColor: CATEGORY_COLORS[d.kategori] || "#333", color: "#000", weight: 1, fillOpacity: 0.8
+                });
             }
 
             const rgUrl = `https://www.resmigazete.gov.tr/eskiler/ara.php?karar=${d.karar_no || d.karar_sayisi || ''}`;
-            layer.bindPopup(`<b>${d.proje_adi}</b><br>Karar: ${d.karar_no || d.karar_sayisi}<br><a href="${rgUrl}" target="_blank" style="color:#e74c3c; font-weight:bold;">📰 Resmî Gazete Ara</a>`);
+            layer.bindPopup(`<b>${d.proje_adi}</b><br>Karar: ${d.karar_no || d.karar_sayisi}<br><a href="${rgUrl}" target="_blank" style="color:red; font-weight:bold;">Resmî Gazete Linki</a>`);
             
             layer.on('click', () => {
-                const center = layer.getBounds ? layer.getBounds().getCenter() : layer.getLatLng();
-                map.setView(center, 12);
+                const pos = isPolygon ? layer.getBounds().getCenter() : layer.getLatLng();
+                map.setView(pos, 12);
             });
             layer.addTo(map);
         });
 
-        // Şehir İstatistikleri
+        // UI Güncellemeleri
         document.getElementById('cityStats').innerHTML = Object.entries(cityCounts)
             .sort((a,b) => b[1] - a[1])
-            .map(([c, n]) => `<div class="city-item"><span>${c}</span><b>${n}</b></div>`).join('') || "Veri yok";
-        
-        // Kayıt Listesi
-        document.getElementById('recordList').innerHTML = filtered.map(d => `
-            <div class="record-card" style="border-left-color:${COLORS[d.kategori]}" onclick="focusOn('${d.proje_adi}')">
-                <b>${d.proje_adi}</b>
-                <small>${d.tahmini_konum || ''} - ${d.karar_no || d.karar_sayisi || ''}</small>
-            </div>
-        `).join('') || "Kayıt bulunamadı";
+            .map(([c, n]) => `<div class="city-item"><span>${c}</span><b>${n}</b></div>`).join('') || "Kayıt yok.";
 
-        document.getElementById('statsCount').innerText = `${filtered.length} Aktif Kayıt`;
+        document.getElementById('recordList').innerHTML = filtered.map(d => `
+            <div class="record-card" style="border-left-color:${CATEGORY_COLORS[d.kategori]}" onclick="goToLoc('${d.proje_adi}')">
+                <b>${d.proje_adi}</b>
+                <small>${d.tahmini_konum || ''} - No: ${d.karar_no || d.karar_sayisi || '-'}</small>
+            </div>
+        `).join('') || "Liste boş.";
+
+        document.getElementById('statsCount').innerText = `${filtered.length} Aktif Karar`;
     }
 
-    window.focusOn = (name) => {
-        const item = kamulastirmaData.find(d => d.proje_adi === name);
-        if(item) {
-            const isPolygon = Array.isArray(item.coordinates[0]);
-            const latlng = isPolygon ? [item.coordinates[0][0][1], item.coordinates[0][0][0]] : [item.coordinates[1], item.coordinates[0]];
+    window.goToLoc = (name) => {
+        const item = kamulastirmaData.find(x => x.proje_adi === name);
+        if (item) {
+            const isPoly = Array.isArray(item.coordinates[0]);
+            const latlng = isPoly ? [item.coordinates[0][0][1], item.coordinates[0][0][0]] : [item.coordinates[1], item.coordinates[0]];
             map.setView(latlng, 12);
         }
     };
 
     document.getElementById('loginBtn').onclick = () => {
-        if(prompt("Şifre:") === "admin123") {
+        if (prompt("Yönetici Şifresi:") === "admin123") {
             document.getElementById('adminControls').classList.remove('hidden');
             document.getElementById('logoutBtn').classList.remove('hidden');
             document.getElementById('loginBtn').classList.add('hidden');
-            const drawControl = new L.Control.Draw({ edit: { featureGroup: drawnItems }, draw: { polygon: true, marker: true, circle:false, polyline:false, rectangle:true } });
+            const drawControl = new L.Control.Draw({ 
+                edit: { featureGroup: drawnItems }, 
+                draw: { polygon: true, marker: true, rectangle: true, circle: false, polyline: false } 
+            });
             map.addControl(drawControl);
         }
     };
 
     map.on(L.Draw.Event.CREATED, (e) => {
+        drawnItems.clearLayers();
         drawnItems.addLayer(e.layer);
         document.getElementById('coordsInput').value = JSON.stringify(e.layer.toGeoJSON().geometry.coordinates);
     });
 
     document.getElementById('saveBtn').onclick = async () => {
-        const cVal = document.getElementById('coordsInput').value;
-        if(!cVal) return alert("Koordinat yok!");
+        const coordsRaw = document.getElementById('coordsInput').value;
+        const pName = document.getElementById('projeAdi').value;
+        if (!coordsRaw || !pName) return alert("Lütfen haritadan alan seçin ve proje adını girin.");
+        
         await db.push({
-            proje_adi: document.getElementById('projeAdi').value,
+            proje_adi: pName,
             karar_no: document.getElementById('kararNo').value,
             tahmini_konum: document.getElementById('sehirInput').value,
-            coordinates: JSON.parse(cVal),
+            coordinates: JSON.parse(coordsRaw),
             kategori: document.getElementById('kategoriSelect').value
         });
-        alert("Kaydedildi.");
+        alert("Başarıyla kaydedildi.");
         location.reload();
     };
 
-    // Başlatma
+    // Uygulamayı Başlat
     initMap();
-    Object.keys(COLORS).forEach(c => {
-        document.getElementById('categoryFilters').innerHTML += `<label style="display:flex;align-items:center;gap:3px;"><input type="checkbox" checked onchange="toggleCat('${c}', this.checked)"> ${c}</label>`;
-        document.getElementById('kategoriSelect').innerHTML += `<option value="${c}">${c}</option>`;
+    
+    // UI Bileşenlerini Oluştur
+    const filtersDiv = document.getElementById('categoryFilters');
+    const selectEl = document.getElementById('kategoriSelect');
+    Object.keys(CATEGORY_COLORS).forEach(cat => {
+        filtersDiv.innerHTML += `<label style="display:flex;align-items:center;gap:3px;cursor:pointer;"><input type="checkbox" checked onchange="handleToggle('${cat}', this.checked)"> ${cat}</label>`;
+        selectEl.innerHTML += `<option value="${cat}">${cat}</option>`;
     });
-    window.toggleCat = (c, s) => { s ? selectedCategories.add(c) : selectedCategories.delete(c); updateView(); };
-    db.on('value', s => { 
-        const val = s.val();
-        kamulastirmaData = val ? Object.values(val) : []; 
-        updateView(); 
-    }, e => console.error("Firebase Hatası:", e));
+
+    window.handleToggle = (cat, status) => {
+        status ? selectedCategories.add(cat) : selectedCategories.delete(cat);
+        renderData();
+    };
+
+    // Firebase Dinleyici
+    db.on('value', snapshot => {
+        const val = snapshot.val();
+        kamulastirmaData = val ? Object.values(val) : [];
+        renderData();
+    }, err => {
+        console.error("Firebase Veri Hatası:", err);
+        document.getElementById('statsCount').innerText = "Bağlantı Hatası!";
+    });
 
 </script>
 </body>
