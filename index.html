@@ -90,15 +90,16 @@
 
 <script>
     // 🔥 EKRAN GÖRÜNTÜSÜNDEKİ GERÇEK BİLGİLERİNİZLE GÜNCELLENDİ 🔥
-    const firebaseConfig = {
-        apiKey: "AIzaSyCfrZFOzg_an5WBFARS_1cB4Q3pfRguz8E",
-        authDomain: "acele-kumulastirma.firebaseapp.com",
-        databaseURL: "https://acele-kumulastirma-default-rtdb.europe-west1.firebasedatabase.app", // Ekran görüntüsündeki adres
-        projectId: "acele-kumulastirma",
-        storageBucket: "acele-kumulastirma.firebasestorage.app",
-        messagingSenderId: "935988668675",
-        appId: "1:935988668675:web:c934a82fbfafc7f5512136"
-    };
+ const firebaseConfig = {
+    apiKey: "AIzaSyBuOrH2wjN1WxY4JqVZcXqZP2VfV8vWcE", // Kendi anahtarınızı buraya yazın
+    authDomain: "acele-kumulastirma.firebaseapp.com",
+    // Görseldeki gerçek adresiniz:
+    databaseURL: "https://acele-kumulastirma-default-rtdb.europe-west1.firebasedatabase.app", 
+    projectId: "acele-kumulastirma",
+    storageBucket: "acele-kumulastirma.appspot.com",
+    messagingSenderId: "935988668675",
+    appId: "1:935988668675:web:c934a82fbfafc7f5512136"
+};
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database().ref("kamulastirma");
