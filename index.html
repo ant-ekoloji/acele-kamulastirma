@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Acele Kamulaştırma Portalı</title>
+    <title>Acele Kamulaştırma Portalı | Tam Sürüm</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
     
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -23,9 +24,12 @@
             justify-content: space-between; 
             z-index: 1000;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            flex-wrap: wrap;
+            gap: 10px;
         }
-        .toolbar h4 { font-size: 1.2rem; margin: 0; }
+        .toolbar h4 { font-size: 1.2rem; margin: 0; display: flex; align-items: center; gap: 8px; }
         .stats-badge { background: rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 20px; font-size: 0.85rem; }
+        .toolbar-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
         
         .main-content { display: flex; flex: 1; overflow: hidden; }
         #map { flex: 3; height: 100%; background: #e9f0f5; min-height: 0; }
@@ -36,15 +40,14 @@
             border-left: 1px solid #ddd; 
             overflow-y: auto; 
             padding: 16px; 
-            min-width: 320px; 
+            min-width: 340px; 
             display: flex; 
             flex-direction: column; 
             gap: 16px;
             box-shadow: -2px 0 5px rgba(0,0,0,0.05);
         }
         
-        h3 { font-size: 1rem; margin-bottom: 10px; color: #2c3e50; border-bottom: 2px solid #3498db; display: inline-block; }
-        h4 { font-size: 0.85rem; margin-bottom: 8px; color: #2c3e50; font-weight: 600; }
+        h4 { font-size: 0.9rem; margin-bottom: 10px; color: #2c3e50; font-weight: 600; border-left: 3px solid #3498db; padding-left: 8px; }
         
         .filter-section { background: #f8f9fa; padding: 12px; border-radius: 8px; border: 1px solid #e0e6ed; }
         .filter-group { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 8px; }
@@ -62,7 +65,7 @@
         .city-item { display: flex; justify-content: space-between; font-size: 0.75rem; padding: 5px 0; border-bottom: 1px solid #e9ecef; }
         .city-item:last-child { border-bottom: none; }
         
-        .record-list-container { flex: 1; overflow-y: auto; min-height: 200px; }
+        .record-list-container { flex: 1; overflow-y: auto; min-height: 200px; max-height: 300px; }
         .record-card { 
             background: white; 
             border-left: 4px solid #3498db; 
@@ -72,6 +75,7 @@
             border: 1px solid #e9ecef;
             cursor: pointer;
             transition: all 0.2s ease;
+            position: relative;
         }
         .record-card:hover { 
             transform: translateX(3px);
@@ -81,6 +85,20 @@
         .record-card b { display: block; font-size: 0.85rem; color: #2c3e50; margin-bottom: 4px; }
         .record-card small { font-size: 0.7rem; color: #6c757d; }
         .record-card .category-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; margin-top: 4px; }
+        .delete-record { 
+            position: absolute; 
+            right: 8px; 
+            top: 8px; 
+            background: none; 
+            border: none; 
+            color: #dc3545;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s;
+            font-size: 14px;
+        }
+        .record-card:hover .delete-record { opacity: 1; }
+        .delete-record:hover { color: #c82333; transform: scale(1.1); }
         
         .admin-section { 
             background: linear-gradient(135deg, #fff9e6 0%, #fff3d6 100%);
@@ -88,7 +106,7 @@
             border-radius: 8px; 
             border: 1px solid #ffd966;
         }
-        input, select { 
+        input, select, textarea { 
             width: 100%; 
             padding: 8px; 
             margin: 6px 0; 
@@ -97,7 +115,7 @@
             font-size: 0.8rem;
             transition: border 0.2s;
         }
-        input:focus, select:focus { outline: none; border-color: #3498db; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: #3498db; }
         .btn { 
             border: none; 
             padding: 8px 16px; 
@@ -106,20 +124,59 @@
             font-weight: 600; 
             font-size: 0.8rem;
             transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
         .btn-primary { background: #3498db; color: white; }
         .btn-primary:hover { background: #2980b9; transform: translateY(-1px); }
-        .btn-danger { background: #e74c3c; color: white; }
-        .btn-danger:hover { background: #c0392b; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-success:hover { background: #218838; }
+        .btn-warning { background: #ffc107; color: #333; }
+        .btn-warning:hover { background: #e0a800; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-danger:hover { background: #c82333; }
+        .btn-sm { padding: 4px 8px; font-size: 0.7rem; }
         .hidden { display: none !important; }
         
         .info-note { font-size: 0.7rem; color: #6c757d; text-align: center; margin-top: 8px; padding: 6px; background: #e9ecef; border-radius: 4px; }
         .loading-spinner { text-align: center; padding: 20px; color: #6c757d; }
         
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        
         @media (max-width: 768px) { 
             .main-content { flex-direction: column; } 
             .sidebar { max-height: 45%; min-width: auto; }
             #map { min-height: 250px; }
+            .toolbar-buttons { width: 100%; justify-content: center; }
         }
     </style>
 </head>
@@ -127,11 +184,13 @@
 
 <div class="app-container">
     <div class="toolbar">
-        <h4>🏗️ ACELE KAMULAŞTIRMA PORTALI</h4>
+        <h4><i class="fas fa-building"></i> ACELE KAMULAŞTIRMA PORTALI</h4>
         <div class="stats-badge" id="statsCount">Yükleniyor...</div>
-        <div>
-            <button class="btn btn-primary" id="loginBtn">🔐 Admin Girişi</button>
-            <button class="btn btn-danger" id="logoutBtn" style="display:none;">🚪 Çıkış</button>
+        <div class="toolbar-buttons">
+            <button class="btn btn-success btn-sm" id="exportBtn"><i class="fas fa-download"></i> Dışa Aktar</button>
+            <button class="btn btn-warning btn-sm" id="importBtn"><i class="fas fa-upload"></i> İçe Aktar</button>
+            <button class="btn btn-primary btn-sm" id="loginBtn"><i class="fas fa-lock"></i> Admin</button>
+            <button class="btn btn-danger btn-sm" id="logoutBtn" style="display:none;"><i class="fas fa-sign-out-alt"></i> Çıkış</button>
         </div>
     </div>
 
@@ -139,35 +198,51 @@
         <div id="map"></div>
         <div class="sidebar">
             <div class="filter-section">
-                <h4>🔍 KATEGORİ FİLTRELE</h4>
+                <h4><i class="fas fa-filter"></i> KATEGORİ FİLTRELE</h4>
                 <div id="categoryFilters" class="filter-group"></div>
+                <div class="info-note" style="margin-top:8px;">
+                    <i class="fas fa-chart-line"></i> Toplam: <span id="totalFilteredCount">0</span> kayıt
+                </div>
             </div>
 
             <div>
-                <h4>📊 İLLERE GÖRE DAĞILIM</h4>
+                <h4><i class="fas fa-chart-bar"></i> İLLERE GÖRE DAĞILIM</h4>
                 <div id="cityStats" class="stats-panel">
                     <div class="loading-spinner">Veri bekleniyor...</div>
                 </div>
             </div>
 
             <div class="record-list-container">
-                <h4>📋 KAMULAŞTIRMA KARARLARI</h4>
+                <h4><i class="fas fa-list"></i> KAMULAŞTIRMA KARARLARI</h4>
                 <div id="recordList">
                     <div class="loading-spinner">Veriler yükleniyor...</div>
                 </div>
             </div>
 
             <div id="adminControls" class="admin-section hidden">
-                <h4>✍️ YENİ PROJE EKLE</h4>
+                <h4><i class="fas fa-edit"></i> YENİ PROJE EKLE</h4>
                 <input type="text" id="projeAdi" placeholder="Proje Adı *">
                 <input type="text" id="kararNo" placeholder="Karar No / Sayısı">
                 <input type="text" id="sehirInput" placeholder="İl *">
                 <input type="text" id="coordsInput" placeholder="Koordinat (Haritadan çizin)" readonly style="background:#f8f9fa;">
                 <select id="kategoriSelect"></select>
-                <button class="btn btn-primary" id="saveBtn" style="width:100%; margin-top:8px;">💾 KAYDET</button>
+                <button class="btn btn-primary" id="saveBtn" style="width:100%; margin-top:8px;"><i class="fas fa-save"></i> KAYDET</button>
                 <div class="info-note">📍 Önce haritaya tıklayıp alan çizin, sonra bilgileri doldurun</div>
             </div>
         </div>
+    </div>
+</div>
+
+<!-- İçe Aktarım Modal -->
+<div id="importModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-upload"></i> JSON İçe Aktar</h3>
+            <button class="btn btn-sm" onclick="closeModal()" style="background:#dc3545; color:white;">✖</button>
+        </div>
+        <textarea id="importJsonData" rows="10" placeholder='[{"proje_adi":"Örnek Proje","karar_no":"2023/001","tahmini_konum":"İstanbul","coordinates":[28.95,41.05],"kategori":"Konut"}]' style="width:100%; font-size:12px;"></textarea>
+        <button class="btn btn-success" id="doImportBtn" style="width:100%; margin-top:10px;"><i class="fas fa-check"></i> İçe Aktar</button>
+        <div class="info-note" style="margin-top:8px;">JSON formatında veri yapıştırın. Her kayıt proje_adi, tahmini_konum, coordinates, kategori içermelidir.</div>
     </div>
 </div>
 
@@ -236,18 +311,13 @@
         
         console.log("✅ Harita başarıyla başlatıldı");
         
-        // Admin paneli için event listener'ları ekle (map hazır olduktan sonra)
         setupMapEvents();
-        
-        // Demo veri ekle
-        addDemoDataIfEmpty();
     }
     
     // Map event'lerini ayarla
     function setupMapEvents() {
         if (!map) return;
         
-        // Çizim olayı
         map.on(L.Draw.Event.CREATED, (e) => {
             if (!isAdminMode) return;
             
@@ -268,35 +338,10 @@
         });
     }
     
-    // Demo veri ekle
-    function addDemoDataIfEmpty() {
-        if (database) {
-            database.once('value', (snapshot) => {
-                if (!snapshot.exists()) {
-                    console.log("📝 Demo veriler ekleniyor...");
-                    const demoData = [
-                        { proje_adi: "İstanbul Kuzey Marmara Otoyolu", karar_no: "2023/1234", tahmini_konum: "İstanbul", coordinates: [28.95, 41.05], kategori: "Ulaşım" },
-                        { proje_adi: "Ankara Kentsel Dönüşüm Projesi", karar_no: "2023/5678", tahmini_konum: "Ankara", coordinates: [32.85, 39.92], kategori: "Kentsel Dönüşüm" },
-                        { proje_adi: "İzmir Konut Projesi", karar_no: "2023/9012", tahmini_konum: "İzmir", coordinates: [27.15, 38.42], kategori: "Konut" },
-                        { proje_adi: "Adana Enerji Santrali", karar_no: "2023/3456", tahmini_konum: "Adana", coordinates: [35.32, 37.00], kategori: "Enerji" },
-                        { proje_adi: "Bursa Altyapı Projesi", karar_no: "2023/7890", tahmini_konum: "Bursa", coordinates: [29.06, 40.18], kategori: "Altyapı" }
-                    ];
-                    demoData.forEach(data => database.push(data));
-                }
-            });
-        }
-    }
-    
     // Görünümü güncelle
     function updateView() {
-        if (!map) {
-            console.warn("Harita henüz başlatılmadı");
-            return;
-        }
+        if (!map) return;
         
-        console.log("🔄 Görünüm güncelleniyor, toplam veri:", kamulastirmaData.length);
-        
-        // Mevcut katmanları temizle (çizim katmanı ve tile katmanı hariç)
         map.eachLayer(layer => {
             if (layer !== drawnItems && !(layer instanceof L.TileLayer)) {
                 map.removeLayer(layer);
@@ -327,7 +372,7 @@
                         const lng = coords[0];
                         if (lat && lng && !isNaN(lat) && !isNaN(lng)) {
                             marker = L.circleMarker([lat, lng], {
-                                radius: 8,
+                                radius: 7,
                                 fillColor: COLORS[item.kategori],
                                 color: "#fff",
                                 weight: 2,
@@ -340,10 +385,10 @@
                 if (marker) {
                     const popupHtml = `
                         <div style="min-width: 200px;">
-                            <strong style="font-size: 14px;">🏗️ ${item.proje_adi || 'İsimsiz'}</strong><br>
-                            <span>📄 Karar: ${item.karar_no || 'Belirtilmemiş'}</span><br>
-                            <span>📍 İl: ${item.tahmini_konum || 'Belirtilmemiş'}</span><br>
-                            <span>🏷️ Kategori: <span style="color:${COLORS[item.kategori]}">${item.kategori}</span></span>
+                            <strong>🏗️ ${item.proje_adi || 'İsimsiz'}</strong><br>
+                            📄 Karar: ${item.karar_no || 'Belirtilmemiş'}<br>
+                            📍 İl: ${item.tahmini_konum || 'Belirtilmemiş'}<br>
+                            🏷️ Kategori: ${item.kategori}
                         </div>
                     `;
                     marker.bindPopup(popupHtml);
@@ -354,11 +399,11 @@
                     marker.addTo(map);
                 }
             } catch (err) {
-                console.warn("Marker eklenirken hata:", err);
+                console.warn("Marker hatası:", err);
             }
         });
         
-        // İstatistikleri güncelle
+        // İstatistikler
         const statsHtml = Object.entries(cityStats)
             .sort((a, b) => b[1] - a[1])
             .map(([city, count]) => `<div class="city-item"><span>${city}</span><strong>${count}</strong></div>`)
@@ -366,20 +411,45 @@
         
         document.getElementById('cityStats').innerHTML = statsHtml || '<div style="text-align:center; padding:10px;">Veri bulunamadı</div>';
         
-        // Liste görünümü
-        const listHtml = filtered.map(item => `
-            <div class="record-card" style="border-left-color: ${COLORS[item.kategori]}" onclick="focusToProject('${(item.proje_adi || '').replace(/'/g, "\\'")}')">
-                <b>${item.proje_adi || 'İsimsiz Proje'}</b>
-                <small>${item.tahmini_konum || '?'} • ${item.karar_no || 'Karar No yok'}</small>
+        // Liste (silme butonlu)
+        const listHtml = filtered.map((item, idx) => `
+            <div class="record-card" style="border-left-color: ${COLORS[item.kategori]}">
+                <button class="delete-record" onclick="deleteRecord('${item.proje_adi?.replace(/'/g, "\\'")}', event)"><i class="fas fa-trash"></i></button>
+                <b onclick="focusToProject('${(item.proje_adi || '').replace(/'/g, "\\'")}')">${item.proje_adi || 'İsimsiz Proje'}</b>
+                <small onclick="focusToProject('${(item.proje_adi || '').replace(/'/g, "\\'")}')">${item.tahmini_konum || '?'} • ${item.karar_no || 'Karar No yok'}</small>
                 <div class="category-badge" style="background: ${COLORS[item.kategori]}20; color: ${COLORS[item.kategori]}">${item.kategori}</div>
             </div>
         `).join('');
         
         document.getElementById('recordList').innerHTML = listHtml || '<div style="text-align:center; padding:20px;">📭 Kayıt bulunamadı</div>';
         document.getElementById('statsCount').innerHTML = `📊 ${filtered.length} Kayıt`;
-        
-        console.log(`✅ Görünüm güncellendi: ${filtered.length} kayıt gösteriliyor`);
+        document.getElementById('totalFilteredCount').innerText = filtered.length;
     }
+    
+    // Kayıt sil
+    window.deleteRecord = function(projeAdi, event) {
+        event.stopPropagation();
+        if (!isAdminMode) {
+            alert("❌ Silmek için admin girişi yapmalısınız!");
+            return;
+        }
+        if (confirm(`"${projeAdi}" projesini silmek istediğinize emin misiniz?`)) {
+            const recordToDelete = kamulastirmaData.find(r => r.proje_adi === projeAdi);
+            if (recordToDelete && recordToDelete.id) {
+                database.child(recordToDelete.id).remove()
+                    .then(() => alert("✅ Kayıt silindi!"))
+                    .catch(err => alert("❌ Silme hatası: " + err.message));
+            } else {
+                // ID ile silme
+                const keys = Object.keys(kamulastirmaData.find(r => r.proje_adi === projeAdi) || {});
+                if (keys.length) {
+                    database.child(Object.keys(kamulastirmaData).find(k => kamulastirmaData[k]?.proje_adi === projeAdi)).remove()
+                        .then(() => alert("✅ Kayıt silindi!"))
+                        .catch(err => alert("❌ Silme hatası: " + err.message));
+                }
+            }
+        }
+    };
     
     // Projeye odaklan
     window.focusToProject = function(name) {
@@ -435,6 +505,46 @@
         });
     }
     
+    // Dışa aktar (JSON)
+    function exportData() {
+        const dataStr = JSON.stringify(kamulastirmaData, null, 2);
+        const blob = new Blob([dataStr], {type: "application/json"});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `kamulastirma_export_${new Date().toISOString().slice(0,19)}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        alert(`✅ ${kamulastirmaData.length} kayıt dışa aktarıldı!`);
+    }
+    
+    // İçe aktar (JSON)
+    function importData(jsonStr) {
+        try {
+            const data = JSON.parse(jsonStr);
+            if (!Array.isArray(data)) throw new Error("Dizi formatında olmalı");
+            
+            let imported = 0;
+            data.forEach(item => {
+                if (item.proje_adi && item.tahmini_konum && item.coordinates && item.kategori) {
+                    database.push({
+                        proje_adi: item.proje_adi,
+                        karar_no: item.karar_no || "Belirtilmemiş",
+                        tahmini_konum: item.tahmini_konum,
+                        coordinates: item.coordinates,
+                        kategori: item.kategori,
+                        import_tarihi: new Date().toISOString()
+                    });
+                    imported++;
+                }
+            });
+            alert(`✅ ${imported} kayıt içe aktarıldı! Sayfa yenileniyor...`);
+            setTimeout(() => location.reload(), 1500);
+        } catch (err) {
+            alert("❌ Geçersiz JSON formatı: " + err.message);
+        }
+    }
+    
     // Admin panelini ayarla
     function setupAdminPanel() {
         document.getElementById('loginBtn').onclick = () => {
@@ -459,16 +569,13 @@
                     });
                     map.addControl(drawControl);
                 }
-                
-                alert("✅ Admin modu aktif! Haritaya tıklayarak yeni proje alanı çizebilirsiniz.");
+                alert("✅ Admin modu aktif! Yeni proje ekleyebilir ve silebilirsiniz.");
             } else if (pwd !== null) {
                 alert("❌ Hatalı şifre!");
             }
         };
         
-        document.getElementById('logoutBtn').onclick = () => {
-            location.reload();
-        };
+        document.getElementById('logoutBtn').onclick = () => location.reload();
         
         document.getElementById('saveBtn').onclick = async () => {
             const projeAdi = document.getElementById('projeAdi').value.trim();
@@ -488,52 +595,65 @@
                     kategori: document.getElementById('kategoriSelect').value,
                     eklenme_tarihi: new Date().toISOString()
                 });
-                
                 alert("✅ Proje başarıyla kaydedildi!");
-                
                 document.getElementById('projeAdi').value = "";
                 document.getElementById('kararNo').value = "";
                 document.getElementById('sehirInput').value = "";
                 document.getElementById('coordsInput').value = "";
                 drawnItems.clearLayers();
-                
             } catch (err) {
-                console.error("Kayıt hatası:", err);
-                alert("❌ Kayıt sırasında hata oluştu!");
+                alert("❌ Kayıt hatası: " + err.message);
+            }
+        };
+        
+        document.getElementById('exportBtn').onclick = () => exportData();
+        document.getElementById('importBtn').onclick = () => {
+            document.getElementById('importModal').style.display = 'flex';
+        };
+        document.getElementById('doImportBtn').onclick = () => {
+            const jsonData = document.getElementById('importJsonData').value;
+            if (jsonData.trim()) {
+                importData(jsonData);
+                closeModal();
+            } else {
+                alert("Lütfen JSON verisi girin!");
             }
         };
     }
     
+    function closeModal() {
+        document.getElementById('importModal').style.display = 'none';
+    }
+    window.closeModal = closeModal;
+    
     // Firebase verilerini dinle
     function listenFirebase() {
-        if (!database) {
-            console.error("Firebase veritabanı bağlantısı yok!");
-            document.getElementById('recordList').innerHTML = '<div class="loading-spinner">❌ Firebase bağlantı hatası</div>';
-            return;
-        }
+        if (!database) return;
         
         database.on('value', (snapshot) => {
             const data = snapshot.val();
             if (data) {
-                kamulastirmaData = Object.values(data);
+                kamulastirmaData = Object.entries(data).map(([id, val]) => ({ id, ...val }));
                 console.log(`📥 Firebase'den ${kamulastirmaData.length} kayıt alındı`);
             } else {
                 kamulastirmaData = [];
-                console.log("📭 Firebase'de veri yok");
             }
             updateView();
-        }, (error) => {
-            console.error("Firebase dinleme hatası:", error);
-        });
+        }, (error) => console.error("Firebase hatası:", error));
     }
     
     // Sayfa yüklendiğinde başlat
     document.addEventListener('DOMContentLoaded', () => {
-        console.log("🚀 Uygulama başlatılıyor...");
         initMap();
         setupFilters();
         setupAdminPanel();
         listenFirebase();
+        
+        // Modal dışına tıklayınca kapat
+        window.onclick = (event) => {
+            const modal = document.getElementById('importModal');
+            if (event.target === modal) closeModal();
+        };
     });
 </script>
 </body>
