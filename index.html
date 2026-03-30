@@ -448,29 +448,29 @@
     }
     
     // ---------- HARİTA KATMANLARI (Türkiye sınırlarına sığdırılmış) ----------
-  function initMap() {
-    const osmStandard = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap'
-    });
-    const osmHumanitarian = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
-        attribution: '© OSM Humanitarian'
-    });
-    const esriSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-        attribution: '© Esri'
-    });
-    const protectedArea = L.geoJSON({
-        "type":"Feature","properties":{},"geometry":{"type":"Polygon","coordinates":[[[34.835,38.665],[34.85,38.665],[34.865,38.658],[34.87,38.645],[34.86,38.632],[34.842,38.63],[34.828,38.635],[34.82,38.645],[34.825,38.655],[34.835,38.665]]]}
-    }, {
-        style: { color: "#ff7800", weight: 2, fillColor: "#ff7800", fillOpacity: 0.2 },
-        attribution: "Örnek koruma alanı"
-    });
+function initMap() {
+    const osmStandard = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' });
+    const osmHumanitarian = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', { attribution: '© OSM Humanitarian' });
+    const esriSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: '© Esri' });
+    
+    // Haritayı oluştur
+    map = L.map('map');
 
-    map = L.map('map').setView([39.0, 35.0], 6);  // Türkiye’yi en iyi gösteren zoom seviyesi
+    // Kırmızı çizgilerle belirttiğiniz alanı kapsayacak koordinat kutusu (Batı-Doğu sığdırma)
+    const turkeyBounds = L.latLngBounds(
+        L.latLng(35.5, 25.5), // Güney Batı (Ege açıkları)
+        L.latLng(42.5, 45.0)  // Kuzey Doğu (Iğdır ötesi)
+    );
 
-    L.control.layers(
-        { "OSM Standart": osmStandard, "OSM Humanitarian": osmHumanitarian, "ESRI Uydu": esriSatellite },
-        { "🌲 Koruma Alanları (örnek)": protectedArea }
-    ).addTo(map);
+    // Haritayı bu sınırlara tam sığdır
+    map.fitBounds(turkeyBounds);
+
+    L.control.layers({ 
+        "OSM Standart": osmStandard, 
+        "OSM Humanitarian": osmHumanitarian, 
+        "ESRI Uydu": esriSatellite 
+    }).addTo(map);
+
     osmStandard.addTo(map);
 }
     
