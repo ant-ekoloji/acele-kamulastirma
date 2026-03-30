@@ -263,10 +263,9 @@
             }
             const marker = L.circleMarker([lat, lng], { radius: 7, fillColor: color, color: "#2c3e50", weight: 1, fillOpacity: 0.85 }).bindPopup(popupHtml);
             if (isAdmin) {
-                marker.on('popupopen', () => {
-                    const btn = document.querySelector('.delete-popup-btn');
-                    if (btn) btn.onclick = () => { deleteRecord(btn.getAttribute('data-key')); map.closePopup(); };
-                });
+                mmarker.on('click', function() {
+    map.setView(marker.getLatLng(), 12); // Tıklanan noktaya 12 zoom seviyesiyle yaklaşır
+});
             }
             marker.addTo(map);
             currentMarkers.push(marker);
@@ -472,7 +471,7 @@ function initMap() {
         "ESRI Uydu": esriSatellite 
     }).addTo(map);
 
-    osmStandard.addTo(map);
+    const osmStandard = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 }
     
     // ---------- BAŞLATMA ----------
