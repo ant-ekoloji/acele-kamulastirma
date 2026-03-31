@@ -1,64 +1,4 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Acele Kamulaştırma Kararları - Türkiye</title>
-    <!-- Leaflet CSS ve JS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <!-- Leaflet MarkerCluster CSS ve JS (nokta gruplama için) -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
-    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        #map {
-            height: 100vh;
-            width: 100%;
-        }
-        .info-panel {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: white;
-            padding: 8px 15px;
-            border-radius: 8px;
-            box-shadow: 0 1px 5px rgba(0,0,0,0.3);
-            z-index: 1000;
-            font-size: 14px;
-            font-weight: bold;
-            pointer-events: none;
-        }
-        .custom-popup .popup-title {
-            font-size: 16px;
-            font-weight: bold;
-            color: #2c3e50;
-            margin-bottom: 8px;
-            border-bottom: 1px solid #eee;
-        }
-        .custom-popup p {
-            margin: 4px 0;
-            font-size: 13px;
-        }
-        .custom-popup strong {
-            color: #e67e22;
-        }
-    </style>
-</head>
-<body>
-    <div class="info-panel">
-        🗺️ Acele Kamulaştırma Kararları (2025-2026) | Toplam: <span id="totalCount">0</span> karar
-    </div>
-    <div id="map"></div>
-
-    <script>
-        // GeoJSON verisi (oluşturduğumuz kaydırılmış noktalar)
-        const kamulastirmaData = {
+{
   "type": "FeatureCollection",
   "features": [
     {
@@ -78,7 +18,11 @@
         "proje": "Kuşadası-Söke İçmesuyu Projesi Kapsamındaki Kuşadası-Söke ve Yöresi İçmesuyu İsale Hattının ve Arıtma Tesisinin Yapımı Amacıyla Bazı Taşınmazların Devlet Su İşleri Genel Müdürlüğü Tarafından Acele Kamulaştırılması Hakkında Karar",
         "resmi_gazete": "33206",
         "tarih": "27.03.2026",
-        "tahmini_konum": "Kuşadası"
+        "tahmini_konum": "Kuşadası",
+        "orijinal_coordinates": [
+          27.2586,
+          37.8579
+        ]
       }
     },
     {
@@ -98,72 +42,1020 @@
         "proje": "154 kV Hitit TM (Çorum-1) TM İrtibatları Enerji İletim Hattı Projesi Adı Altında Yer Alan 154 kV Çorum-Çankırı Enerji İletim Hattı Kısmi Güzergâhı Projesi Kapsamında Bazı Taşınmazların Türkiye Elektrik İletim Anonim Şirketi Genel Müdürlüğü Tarafından Acele Kamulaştırılması Hakkında Karar",
         "resmi_gazete": "33206",
         "tarih": "27.03.2026",
-        "tahmini_konum": "Çorum"
+        "tahmini_konum": "Çorum",
+        "orijinal_coordinates": [
+          34.9556,
+          40.5499
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.052374682999558,
+          40.19196178900244
+        ]
+      },
+      "properties": {
+        "id": "-OooPIavr2O8saPTCAbr",
+        "kurum": "Ulaştırma ve Altyapı Bakanlığı (Altyapı Yatırımları Genel Müdürlüğü)",
+        "karar_no": "11098",
+        "kategori": "Ulaşım",
+        "proje": "Bursa-Emek-Şehir Hastanesi Hafif Raylı Sistem Hattı Projesi Kapsamında Bazı Taşınmazlar ile Üzerlerindeki Muhdesatın, Ulaştırma ve Altyapı Bakanlığı (Altyapı Yatırımları Genel Müdürlüğü) Tarafından Acele Kamulaştırılması Hakkında Karar",
+        "resmi_gazete": "33201",
+        "tarih": "19.03.2026",
+        "tahmini_konum": "Bursa",
+        "orijinal_coordinates": [
+          29.0609,
+          40.1833
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.87455192439275,
+          39.94087152882015
+        ]
+      },
+      "properties": {
+        "id": "-OooPIc-9Yr1rPvCaIWd",
+        "kurum": "Ankara Su ve Kanalizasyon İdaresi Genel Müdürlüğü",
+        "karar_no": "11071",
+        "kategori": "Altyapı",
+        "proje": "Ankara İli, Etimesgut, Gölbaşı ve Bala İlçelerinde Bulunan Bazı Taşınmazların, Ankara İli İçmesuyu Temin Projesi (Kesikköprü) Revize Ön Projesinin Gerçekleştirilmesi Amacıyla Ankara Su ve Kanalizasyon İdaresi Genel Müdürlüğü Tarafından Acele Kamulaştırılması Hakkında Karar",
+        "resmi_gazete": "33199",
+        "tarih": "17.03.2026",
+        "tahmini_konum": "Ankara",
+        "orijinal_coordinates": [
+          32.8597,
+          39.9334
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          40.53122947942179,
+          41.025676834786795
+        ]
+      },
+      "properties": {
+        "id": "-OooPId5jujAEO1j7Gto",
+        "kurum": "Türkiye Elektrik İletim Anonim Şirketi Genel Müdürlüğü",
+        "karar_no": "11075",
+        "kategori": "Enerji",
+        "proje": "154 kV Uzundere I-II HES TM-Çayeli TM Enerji İletim Hattının 6 Numaralı Direğinin Deplase Edilmesi Amacıyla Bazı Taşınmazlarda Direk Yerlerinin Mülkiyet Şeklinde, İletken Salının Gabarisinin ise İrtifak Hakkı Kurulmak Suretiyle Türkiye Elektrik İletim Anonim Şirketi Genel Müdürlüğü Tarafından Acele Kamulaştırılması Hakkında Karar",
+        "resmi_gazete": "33199",
+        "tarih": "17.03.2026",
+        "tahmini_konum": "Rize",
+        "orijinal_coordinates": [
+          40.5215,
+          41.0201
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          35.16540141025374,
+          42.03520632874526
+        ]
+      },
+      "properties": {
+        "id": "-OooPIeB-XEMClFCAhfy",
+        "kurum": "Türkiye Elektrik İletim Anonim Şirketi Genel Müdürlüğü",
+        "karar_no": "11076",
+        "kategori": "Diğer",
+        "proje": "154 kV Türkeli TM İrtibatları Projesi Kapsamında Bazı Taşınmazların Türkiye Elektrik İletim Anonim Şirketi Genel Müdürlüğü Tarafından Acele Kamulaştırılması Hakkında Karar",
+        "resmi_gazete": "33199",
+        "tarih": "17.03.2026",
+        "tahmini_konum": "Sinop",
+        "orijinal_coordinates": [
+          35.1519,
+          42.0265
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          43.75240906451958,
+          37.57991123065134
+        ]
+      },
+      "properties": {
+        "id": "-OooPIfFEh5a0ViTYM11",
+        "kurum": "Devlet Su İşleri Genel Müdürlüğü",
+        "karar_no": "11078",
+        "kategori": "Altyapı",
+        "proje": "Yüksekova Sulaması Projesi (DAP) Kapsamındaki Yüksekova Dilimli Sulama Projesinin Yapımı Amacıyla Bazı Taşınmazların Devlet Su İşleri Genel Müdürlüğü Tarafından Acele Kamulaştırılması Hakkında Karar",
+        "resmi_gazete": "33199",
+        "tarih": "17.03.2026",
+        "tahmini_konum": "Hakkari",
+        "orijinal_coordinates": [
+          43.7412,
+          37.5744
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.87031402799096,
+          39.92580267373827
+        ]
+      },
+      "properties": {
+        "id": "-OooPIgJZelfbcUiaOrZ",
+        "kurum": "Enerji Piyasası Düzenleme Kurumu",
+        "karar_no": "11046",
+        "kategori": "Enerji",
+        "proje": "Ankara İli, Kalecik İlçesinde Kurulacak RMS-B Doğal Gaz Dağıtım Tesisinin Yapımı Amacıyla, Çiftlikköy Mahallesi Sınırları İçerisinde Yer Alan 226 Ada, 1 Parsel Numaralı Taşınmazın, Enerji Piyasası Düzenleme Kurumu Tarafından Acele Kamulaştırılması Hakkında Karar",
+        "resmi_gazete": "33195",
+        "tarih": "13.03.2026",
+        "tahmini_konum": "Ankara",
+        "orijinal_coordinates": [
+          32.8597,
+          39.9334
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          38.40576738128866,
+          40.925718016564515
+        ]
+      },
+      "properties": {
+        "id": "-OooPIhNB_x0shVWL8dT",
+        "kurum": "Enerji Piyasası Düzenleme Kurumu",
+        "karar_no": "11047",
+        "kategori": "Enerji",
+        "proje": "Giresun İli, Görele İlçesinde Kurulacak RMS-A Doğal Gaz Dağıtım Tesisinin Yapımı Amacıyla, Bazı Taşınmazların Enerji Piyasası Düzenleme Kurumu Tarafından Acele Kamulaştırılması Hakkında Karar",
+        "resmi_gazete": "33195",
+        "tarih": "13.03.2026",
+        "tahmini_konum": "Giresun",
+        "orijinal_coordinates": [
+          38.3927,
+          40.9176
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          28.25686454055058,
+          41.080759013085644
+        ]
+      },
+      "properties": {
+        "id": "-OooPIiSC9RsdxwFrJj8",
+        "kurum": "Adalet Bakanlığı (Ceza ve Tevkifevleri Genel Müdürlüğü)",
+        "karar_no": "11049",
+        "kategori": "Ulaşım",
+        "proje": "İstanbul İli, Silivri İlçesi, Semizkumlar Mahallesinde Bulunan Özel Mülkiyete Konu 8378 Ada, 5 Parsel ve 8379 Ada 6 Parsel Numaralı Taşınmazların, Marmara Ceza İnfaz Kurumları Kampüsünün Otopark İhtiyacının Karşılanması ve Kampüse Ulaşımın Güvenli Şekilde Sağlanması İçin Alternatif Yol Yapılması Amacıyla Adalet Bakanlığı (Ceza ve Tevkifevleri Genel Müdürlüğü) Tarafından Acele Kamulaştırılması Hakkında Karar",
+        "resmi_gazete": "33195",
+        "tarih": "13.03.2026",
+        "tahmini_konum": "Silivri",
+        "orijinal_coordinates": [
+          28.2462,
+          41.0742
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          38.80345166842004,
+          37.15697633977958
+        ]
+      },
+      "properties": {
+        "id": "-OooPIjXSum0TStnKVZn",
+        "kurum": "Şanlıurfa Büyükşehir Belediye Başkanlığı",
+        "karar_no": "11050",
+        "kategori": "Ulaşım",
+        "proje": "Şanlıurfa İli, Hilvan ve Siverek İlçeleri Sınırları İçerisinde Bulunan Bazı Taşınmazlar ile Üzerlerindeki Muhdesatın, Söz Konusu İlçelerdeki Uygulama İmar Planlarına Göre Yol Projelerinin Sınırları İçerisinde Kalmaları Nedeniyle Şanlıurfa Büyükşehir Belediye Başkanlığı Tarafından Acele Kamulaştırılması Hakkında Karar",
+        "resmi_gazete": "33195",
+        "tarih": "13.03.2026",
+        "tahmini_konum": "Şanlıurfa",
+        "orijinal_coordinates": [
+          38.7939,
+          37.1674
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          40.24508135018852,
+          37.90420465282136
+        ]
+      },
+      "properties": {
+        "id": "-OooPIkagU0Ol-7piUol",
+        "kurum": "Maden ve Petrol İşleri Genel Müdürlüğü",
+        "karar_no": "11036",
+        "kategori": "Ulaşım",
+        "proje": "Türkiye Petrolleri Anonim Ortaklığına Ait AR/TPO/K/M44-b4 Pafta Numaralı Petrol Arama Ruhsatında Açılan Şükürlü-5 Kuyusunun Lokasyon Sahası ve Yolunun Yapımı Amacıyla Diyarbakır İli, Çınar İlçesinde Bulunan Taşınmazın Maden ve Petrol İşleri Genel Müdürlüğü Tarafından Acele Kamulaştırılması Hakkında Karar",
+        "resmi_gazete": "33194",
+        "tarih": "12.03.2026",
+        "tahmini_konum": "Diyarbakır",
+        "orijinal_coordinates": [
+          40.2333,
+          37.9144
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          34.651376766712456,
+          36.803766575475555
+        ]
+      },
+      "properties": {
+        "id": "-OooPIlfNtcETWpEr9TM",
+        "kurum": "Karayolları Genel Müdürlüğü",
+        "karar_no": "11005",
+        "kategori": "Ulaşım",
+        "proje": "Erdemli-Silifke-Taşucu-Anamur-13. Bölge Hududu Devlet Yolu Akkuyu Nükleer Güç Santrali Bağlantı Yolu-2 Projesi Kapsamında Bazı Taşınmazların Karayolları Genel Müdürlüğü Tarafından Acele Kamulaştırılması Hakkında Karar",
+        "resmi_gazete": "33189",
+        "tarih": "07.03.2026",
+        "tahmini_konum": "Mersin",
+        "orijinal_coordinates": [
+          34.6415,
+          36.8121
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          40.22278938101785,
+          37.906405823160876
+        ]
+      },
+      "properties": {
+        "id": "-OooPImjjN6Uc_UtZ4_I",
+        "kurum": "Türkiye Elektrik İletim Anonim Şirketi Genel Müdürlüğü",
+        "karar_no": "11006",
+        "kategori": "Enerji",
+        "proje": "154 kV İsdemir Diyarbakır-2 GES TM - Lice TM Enerji İletim Hattı Projesi Kapsamında Bazı Taşınmazların Türkiye Elektrik İletim Anonim Şirketi Genel Müdürlüğü Tarafından Acele Kamulaştırılması Hakkında Karar",
+        "resmi_gazete": "33189",
+        "tarih": "07.03.2026",
+        "tahmini_konum": "Diyarbakır",
+        "orijinal_coordinates": [
+          40.2333,
+          37.9144
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          40.5108966684647,
+          41.02853141592586
+        ]
+      },
+      "properties": {
+        "id": "-OooPInoKZ9MDq597M2w",
+        "kurum": "Enerji Piyasası Düzenleme Kurumu",
+        "karar_no": "10964",
+        "kategori": "Enerji",
+        "proje": "Rize İli, Fındıklı İlçesinde Kurulacak RMS-A Doğal Gaz Dağıtım Tesisinin Yapımı Amacıyla, Aksu Mahallesi Sınırları İçerisinde Yer Alan 205 Ada, 11 Parsel Numaralı Taşınmazın, Tapuda Hazine Adına Tescil Edilmek Üzere Enerji Piyasası Düzenleme Kurumu Tarafından Acele Kamulaştırılması Hakkında Karar",
+        "resmi_gazete": "33181",
+        "tarih": "27.02.2026",
+        "tahmini_konum": "Rize",
+        "orijinal_coordinates": [
+          40.5215,
+          41.0201
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          38.80447476628237,
+          37.15893423943488
+        ]
+      },
+      "properties": {
+        "id": "-OooPIos97yzOC34Miau",
+        "kurum": "Şanlıurfa Büyükşehir Belediye Başkanlığı",
+        "karar_no": "10965",
+        "kategori": "Kentsel Dönüşüm",
+        "proje": "Şanlıurfa İli, Eyyübiye ve Haliliye İlçeleri Sınırları İçerisinde Bulunan Bazı Taşınmazların, Bölgede Yürütülen Kentsel Dönüşüm ve Gelişim Projesi Kapsamında Şanlıurfa Büyükşehir Belediye Başkanlığı Tarafından Acele Kamulaştırılması Hakkında Karar",
+        "resmi_gazete": "33181",
+        "tarih": "27.02.2026",
+        "tahmini_konum": "Şanlıurfa",
+        "orijinal_coordinates": [
+          38.7939,
+          37.1674
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          34.654016333220235,
+          36.8041478997004
+        ]
+      },
+      "properties": {
+        "id": "-OooPIpxsPb9_evYZ6TZ",
+        "kurum": "Toplu Konut İdaresi Başkanlığı",
+        "karar_no": "10966",
+        "kategori": "Konut",
+        "proje": "Mersin İli, Akdeniz İlçesi, Yaka Mahallesinde Bulunan Bazı Taşınmazların, Bölgede İhtiyaç Duyulan Sosyal Konut Projesinin Gerçekleştirilmesi Amacıyla Toplu Konut İdaresi Başkanlığı Tarafından Acele Kamulaştırılması Hakkında Karar",
+        "resmi_gazete": "33181",
+        "tarih": "27.02.2026",
+        "tahmini_konum": "Mersin",
+        "orijinal_coordinates": [
+          34.6415,
+          36.8121
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.048932354467773,
+          40.19265072909192
+        ]
+      },
+      "properties": {
+        "id": "-OooPIr0GkUeBwuJwFvd",
+        "kurum": "Ulaştırma ve Altyapı Bakanlığı (Altyapı Yatırımları Genel Müdürlüğü)",
+        "karar_no": "10967",
+        "kategori": "Ulaşım",
+        "proje": "Bandırma-Bursa-Yenişehir-Osmaneli Yüksek Standartlı Demiryolu Projesinin Km:140+335.61-155+279 Arasındaki Kesiminde Gerçekleştirilen Güzergâh Revizyonu Nedeniyle Bazı Taşınmazların, Tapuda Hazine Adına Tescil Edilmek Üzere Ulaştırma ve Altyapı Bakanlığı (Altyapı Yatırımları Genel Müdürlüğü) Tarafından Acele Kamulaştırılması Hakkında Karar",
+        "resmi_gazete": "33181",
+        "tarih": "27.02.2026",
+        "tahmini_konum": "Bursa",
+        "orijinal_coordinates": [
+          29.0609,
+          40.1833
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          34.1714503191465,
+          39.136009683199285
+        ]
+      },
+      "properties": {
+        "id": "-OooPIs4S6F2HENijpTC",
+        "kurum": "Toplu Konut İdaresi Başkanlığı",
+        "karar_no": "10968",
+        "kategori": "Konut",
+        "proje": "Kırşehir İli, Akpınar İlçesi, Hacıhüseyinefendi Mahallesinde Bulunan Bazı Taşınmazların Yola İsabet Eden Kısmının, Bölgede İhtiyaç Duyulan Sosyal Konut Projesinin Gerçekleştirilmesi Amacıyla Toplu Konut İdaresi Başkanlığı Tarafından Acele Kamulaştırılması Hakkında Karar",
+        "resmi_gazete": "33181",
+        "tarih": "27.02.2026",
+        "tahmini_konum": "Kırşehir",
+        "orijinal_coordinates": [
+          34.1601,
+          39.1444
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.70710852441066,
+          40.9961604577536
+        ]
+      },
+      "properties": {
+        "id": "-OooPIt9WlugA78kIQe-",
+        "kurum": "Karayolları Genel Müdürlüğü",
+        "karar_no": "10971",
+        "kategori": "Ulaşım",
+        "proje": "Akçaabat-Söğütlü-Yıldızlı İl Yolu Projesi (Km:0+000.00-2+152.00-0+000.00-0+412.40 Arası) Kapsamında Gösterilen Güzergâha Rastlayan Kesimde Araziye Girilerek Yol Yapım Çalışmalarının Tamamlanması Amacıyla İhtiyaç Duyulan Taşınmazlar ile Üzerlerindeki Müştemilatın Karayolları Genel Müdürlüğü Tarafından Acele Kamulaştırılması Hakkında Karar",
+        "resmi_gazete": "33181",
+        "tarih": "27.02.2026",
+        "tahmini_konum": "Trabzon",
+        "orijinal_coordinates": [
+          39.7167,
+          41.005
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          28.359560241282037,
+          37.20961864292401
+        ]
+      },
+      "properties": {
+        "id": "-OooPIuD17J04_qb5h3t",
+        "kurum": "Toplu Konut İdaresi Başkanlığı",
+        "karar_no": "10942",
+        "kategori": "Konut",
+        "proje": "Muğla İli, Kavaklıdere İlçesi, Çayboyu Mahallesinde Bulunan ve Sınırları Gösterilen Bağlantı Yolu ve Proje Sahasına Rastlayan Özel Mülkiyete Konu Taşınmazların, Bölgede İhtiyaç Duyulan Sosyal Konut Projesinin Gerçekleştirilmesi Amacıyla Toplu Konut İdaresi Başkanlığı Tarafından Acele Kamulaştırılması Hakkında Karar",
+        "resmi_gazete": "33167",
+        "tarih": "13.02.2026",
+        "tahmini_konum": "Muğla",
+        "orijinal_coordinates": [
+          28.3667,
+          37.2167
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          40.53090707542232,
+          41.02890223247684
+        ]
+      },
+      "properties": {
+        "id": "-OooPIvHFEx4RpklCWi8",
+        "kurum": "Toplu Konut İdaresi Başkanlığı",
+        "karar_no": "10943",
+        "kategori": "Konut",
+        "proje": "Rize İli, Merkez İlçesi, Yağlıtaş Mahallesinde Bulunan ve Sınırları Gösterilen Alanda Yer Alan Özel Mülkiyete Konu Taşınmazların, Bölgede İhtiyaç Duyulan Sosyal Konut Projesinin Gerçekleştirilmesi Amacıyla Toplu Konut İdaresi Başkanlığı Tarafından Acele Kamulaştırılması Hakkında Karar",
+        "resmi_gazete": "33167",
+        "tarih": "13.02.2026",
+        "tahmini_konum": "Rize",
+        "orijinal_coordinates": [
+          40.5215,
+          41.0201
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.49456675737686,
+          37.8619181779325
+        ]
+      },
+      "properties": {
+        "id": "-OooPIwMrAk4Xy5J5S4g",
+        "kurum": "Konya Su ve Kanalizasyon İdaresi Genel Müdürlüğü",
+        "karar_no": "10930",
+        "kategori": "Altyapı",
+        "proje": "Konya İli, Taşkent ve Hadim İlçeleri Sınırları İçerisinde Bulunan ve Kamulaştırma Bilgileri Yer Alan Özel Mülkiyete Konu Taşınmazların, “Afşar Bağbaşı Terfili İsale Hattı Projesi”nin Gerçekleştirilmesi Amacıyla Konya Su ve Kanalizasyon İdaresi Genel Müdürlüğü Tarafından Acele Kamulaştırılması Hakkında Karar",
+        "resmi_gazete": "33154",
+        "tarih": "31.01.2026",
+        "tahmini_konum": "Konya",
+        "orijinal_coordinates": [
+          32.4846,
+          37.8713
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          40.53220405422116,
+          41.01198070056007
+        ]
+      },
+      "properties": {
+        "id": "-OooPIxRDAxciYzYBmim",
+        "kurum": "Aile ve Sosyal Hizmetler Bakanlığı",
+        "karar_no": "10931",
+        "kategori": "Diğer",
+        "proje": "Rize İli, Merkez İlçesi, Pekmezli Köyü Sınırları İçerisinde Yer Alan ve Ada ve Parsel Numarası Gösterilen Taşınmazların, Çocuk Evi İhtiyacının Karşılanması Amacıyla Aile ve Sosyal Hizmetler Bakanlığı Tarafından Acele Kamulaştırılması Hakkında Karar",
+        "resmi_gazete": "33154",
+        "tarih": "31.01.2026",
+        "tahmini_konum": "Rize",
+        "orijinal_coordinates": [
+          40.5215,
+          41.0201
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          34.649294810528455,
+          36.81972470329581
+        ]
+      },
+      "properties": {
+        "id": "-OooPIyVAV8olLrGFdJ4",
+        "kurum": "Boru Hatları ile Petrol Taşıma Anonim Şirketi Genel Müdürlüğü",
+        "karar_no": "10889",
+        "kategori": "Enerji",
+        "proje": "Mut-Mersin Doğal Gaz Boru Hattı Projesinin Gerçekleştirilmesi Amacıyla Bazı Taşınmazların Boru Hatları ile Petrol Taşıma Anonim Şirketi Genel Müdürlüğü Tarafından Acele Kamulaştırılması Hakkında Karar",
+        "resmi_gazete": "33145",
+        "tarih": "22.01.2026",
+        "tahmini_konum": "Mersin",
+        "orijinal_coordinates": [
+          34.6415,
+          36.8121
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          27.85845040115218,
+          37.84652363022616
+        ]
+      },
+      "properties": {
+        "id": "-OooPIzZSRMnvWTbhVbA",
+        "kurum": "Enerji Piyasası Düzenleme Kurumu",
+        "karar_no": "10890",
+        "kategori": "Enerji",
+        "proje": "Aydın İli, Buharkent İlçesine Doğal Gaz Arzı Sağlanması İçin Denizli İli, Sarayköy İlçesinde Kurulacak RMS-A Doğal Gaz Dağıtım Tesisinin Yapımı Amacıyla, Kabaağaç Mahallesi Sınırları İçerisinde Yer Alan Taşınmazın Enerji Piyasası Düzenleme Kurumu Tarafından Acele Kamulaştırılması Hakkında Karar",
+        "resmi_gazete": "33145",
+        "tarih": "22.01.2026",
+        "tahmini_konum": "Aydın",
+        "orijinal_coordinates": [
+          27.8453,
+          37.8381
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          28.236566162899998,
+          41.08187457703011
+        ]
+      },
+      "properties": {
+        "id": "-OooPJ-dV3fnbSTsXv8g",
+        "kurum": "Boru Hatları ile Petrol Taşıma Anonim Şirketi Genel Müdürlüğü",
+        "karar_no": "10891",
+        "kategori": "Enerji",
+        "proje": "Silivri Doğal Gaz Depolama 4. Etap Projesinin Gerçekleştirilmesi Amacıyla Bazı Taşınmazların Boru Hatları ile Petrol Taşıma Anonim Şirketi Genel Müdürlüğü Tarafından Acele Kamulaştırılması Hakkında Karar",
+        "resmi_gazete": "33145",
+        "tarih": "22.01.2026",
+        "tahmini_konum": "Silivri",
+        "orijinal_coordinates": [
+          28.2462,
+          41.0742
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          28.98934503949181,
+          41.01583832163254
+        ]
+      },
+      "properties": {
+        "id": "-OooPJ0hdvDYVXEXik-g",
+        "kurum": "Türkiye Elektrik İletim Anonim Şirketi Genel Müdürlüğü",
+        "karar_no": "10878",
+        "kategori": "Enerji",
+        "proje": "154 kV Gelgit RES TM-(BOTAŞ TM-Çatalca RES TM) (Girdi-Çıktı) Enerji İletim Hattı Projesi Kapsamında Bazı Taşınmazların Türkiye Elektrik İletim Anonim Şirketi Genel Müdürlüğü Tarafından Acele Kamulaştırılması Hakkında Karar",
+        "resmi_gazete": "33140",
+        "tarih": "17.01.2026",
+        "tahmini_konum": "İstanbul",
+        "orijinal_coordinates": [
+          28.9784,
+          41.0082
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.069309399381528,
+          40.192454144116595
+        ]
+      },
+      "properties": {
+        "id": "-OooPJ1lR7f7b6ky1vse",
+        "kurum": "Ulaştırma ve Altyapı Bakanlığı (Altyapı Yatırımları Genel Müdürlüğü)",
+        "karar_no": "10879",
+        "kategori": "Ulaşım",
+        "proje": "Bandırma-Bursa-Yenişehir-Osmaneli Yüksek Standartlı Demiryolu Projesi Kapsamında Yenişehir İstasyonunun Havalimanına Bağlantısının Sağlanması Amacıyla İhtiyaç Duyulan Bazı Taşınmazların Ulaştırma ve Altyapı Bakanlığı (Altyapı Yatırımları Genel Müdürlüğü) Tarafından Acele Kamulaştırılması Hakkında Karar",
+        "resmi_gazete": "33140",
+        "tarih": "17.01.2026",
+        "tahmini_konum": "Bursa",
+        "orijinal_coordinates": [
+          29.0609,
+          40.1833
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          30.562894124392315,
+          37.75374299278367
+        ]
+      },
+      "properties": {
+        "id": "-OooPJ2pVfW294agYqAS",
+        "kurum": "Boru Hatları ile Petrol Taşıma Anonim Şirketi Genel Müdürlüğü",
+        "karar_no": "10880",
+        "kategori": "Enerji",
+        "proje": "Eğirdir İlçesi Doğal Gaz Boru Hattı Projesinin Gerçekleştirilmesi Amacıyla Bazı Taşınmazların Boru Hatları ile Petrol Taşıma Anonim Şirketi Genel Müdürlüğü Tarafından Acele Kamulaştırılması Hakkında Karar",
+        "resmi_gazete": "33140",
+        "tarih": "17.01.2026",
+        "tahmini_konum": "Isparta",
+        "orijinal_coordinates": [
+          30.552,
+          37.7648
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          28.988466270901634,
+          41.01705267368848
+        ]
+      },
+      "properties": {
+        "id": "-OooPJ3uoiANcvlRfBVn",
+        "kurum": "Toplu Konut İdaresi Başkanlığı",
+        "karar_no": "10854",
+        "kategori": "Konut",
+        "proje": "İstanbul İli, Arnavutköy İlçesi, Baklalı Mahallesi Sınırları İçerisinde Bulunan Haritada Sınırları Gösterilen Alanda Yer Alan Özel Mülkiyete Konu Taşınmazların, “100.000 Sosyal Konut Projesi” Kapsamında Söz Konusu Mahallede Yapımı Gerçekleştirilen Konutlara Doğal Gaz Arzının Sağlanması Amacıyla Toplu Konut İdaresi Başkanlığı Tarafından Acele Kamulaştırılması Hakkında Karar",
+        "resmi_gazete": "33138",
+        "tarih": "15.01.2026",
+        "tahmini_konum": "İstanbul",
+        "orijinal_coordinates": [
+          28.9784,
+          41.0082
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          42.71464174796954,
+          41.11917275000325
+        ]
+      },
+      "properties": {
+        "id": "-OooPJ4zNc8DnDzzPBNz",
+        "kurum": "Enerji Piyasası Düzenleme Kurumu",
+        "karar_no": "10855",
+        "kategori": "Enerji",
+        "proje": "Posof İlçesi Doğal Gaz Boru Hattı Projesinin Yapımı Amacıyla Yurtbekler Köyü Sınırları İçerisinde Yer Alan 112 Ada, 2 Parsel Numaralı Taşınmazın, Enerji Piyasası Düzenleme Kurumu Tarafından Acele Kamulaştırılması Hakkında Karar",
+        "resmi_gazete": "33138",
+        "tarih": "15.01.2026",
+        "tahmini_konum": "Ardahan",
+        "orijinal_coordinates": [
+          42.7022,
+          41.1107
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          31.812291645020088,
+          41.465284078398856
+        ]
+      },
+      "properties": {
+        "id": "-OooPJ62aVn5lyA0EgTO",
+        "kurum": "Enerji Piyasası Düzenleme Kurumu",
+        "karar_no": "10856",
+        "kategori": "Enerji",
+        "proje": "Zonguldak İli, Ereğli İlçesinde Kurulacak RMS-A Doğal Gaz Dağıtım Tesisinin Yapımı Amacıyla, Başören Köyü Sınırları İçerisinde Yer Alan 101 Ada, 10 Parsel Numaralı Taşınmazın, Enerji Piyasası Düzenleme Kurumu Tarafından Acele Kamulaştırılması Hakkında Karar",
+        "resmi_gazete": "33138",
+        "tarih": "15.01.2026",
+        "tahmini_konum": "Zonguldak",
+        "orijinal_coordinates": [
+          31.7997,
+          41.4564
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          34.634219171942744,
+          36.80351785023463
+        ]
+      },
+      "properties": {
+        "id": "-OooPJ771bn5IbILLKLT",
+        "kurum": "Toplu Konut İdaresi Başkanlığı",
+        "karar_no": "10845",
+        "kategori": "Konut",
+        "proje": "Mersin İli, Yenişehir İlçesi, Çavak Mahallesinde Bulunan ve Sınırları Gösterilen Alanda Yer Alan Özel Mülkiyete Konu Taşınmazların, Bölgede İhtiyaç Duyulan Sosyal Konut Projesinin Gerçekleştirilmesi Amacıyla Toplu Konut İdaresi Başkanlığı Tarafından Acele Kamulaştırılması Hakkında Karar",
+        "resmi_gazete": "33133",
+        "tarih": "10.01.2026",
+        "tahmini_konum": "Mersin",
+        "orijinal_coordinates": [
+          34.6415,
+          36.8121
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.7247918297181,
+          40.99772506378938
+        ]
+      },
+      "properties": {
+        "id": "-OooPJ8DajNGmlsU4bWh",
+        "kurum": "Toplu Konut İdaresi Başkanlığı",
+        "karar_no": "10846",
+        "kategori": "Konut",
+        "proje": "Trabzon İli, Akçaabat İlçesi, Sarıtaş Mahallesinde Bulunan ve Sınırları Gösterilen Alanda Yer Alan Özel Mülkiyete Konu Taşınmazların, Bölgede İhtiyaç Duyulan Sosyal Konut Projesinin Gerçekleştirilmesi Amacıyla Toplu Konut İdaresi Başkanlığı Tarafından Acele Kamulaştırılması Hakkında Karar",
+        "resmi_gazete": "33133",
+        "tarih": "10.01.2026",
+        "tahmini_konum": "Trabzon",
+        "orijinal_coordinates": [
+          39.7167,
+          41.005
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          34.96541682882819,
+          40.55877294508542
+        ]
+      },
+      "properties": {
+        "id": "-OooPJ9HryIt53e7CUo9",
+        "kurum": "Türkiye Elektrik İletim Anonim Şirketi Genel Müdürlüğü",
+        "karar_no": "10847",
+        "kategori": "Enerji",
+        "proje": "154 kV İsdemir Çorum Alaca GES (Perçem GES) TM-Bozok TM Enerji İletim Hattı Projesi Kapsamında Bazı Taşınmazların Türkiye Elektrik İletim Anonim Şirketi Genel Müdürlüğü Tarafından Acele Kamulaştırılması Hakkında Karar",
+        "resmi_gazete": "33133",
+        "tarih": "10.01.2026",
+        "tahmini_konum": "Çorum",
+        "orijinal_coordinates": [
+          34.9556,
+          40.5499
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          28.358242472562897,
+          37.22367879121116
+        ]
+      },
+      "properties": {
+        "id": "-OooPJAMB5ZBJGT0N9cr",
+        "kurum": "Maden ve Petrol İşleri Genel Müdürlüğü",
+        "karar_no": "10848",
+        "kategori": "Maden / Petrol",
+        "proje": "Muğla İli, Milas İlçesi Sınırları İçerisinde Bulunan S:86541 Sayılı IV. Grup Maden (Linyit) İşletme Ruhsatlı Sahada, Ruhsata Konu Maden Üretimine Devam Edilebilmesi İçin İhtiyaç Duyulan Bazı Taşınmazların Maden ve Petrol İşleri Genel Müdürlüğü Tarafından Acele Kamulaştırılması Hakkında Karar",
+        "resmi_gazete": "33133",
+        "tarih": "10.01.2026",
+        "tahmini_konum": "Muğla",
+        "orijinal_coordinates": [
+          28.3667,
+          37.2167
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          38.7850512587664,
+          37.17600315911914
+        ]
+      },
+      "properties": {
+        "id": "-OooPJBQg8ehbNDj1iiP",
+        "kurum": "Karayolları Genel Müdürlüğü",
+        "karar_no": "10824",
+        "kategori": "Ulaşım",
+        "proje": "Viranşehir Çevre Yolu Projesi (Km:0+000.00-13+639.33 Arası) Kapsamında Araziye Girilerek Yol Yapım Çalışmalarının Tamamlanması Amacıyla Bazı Taşınmazlar ile Üzerlerindeki Müştemilatın Karayolları Genel Müdürlüğü Tarafından Acele Kamulaştırılması Hakkında Karar",
+        "resmi_gazete": "33131",
+        "tarih": "08.01.2026",
+        "tahmini_konum": "Şanlıurfa",
+        "orijinal_coordinates": [
+          38.7939,
+          37.1674
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          40.27316631893088,
+          40.93171999447616
+        ]
+      },
+      "properties": {
+        "id": "-OooPJCUnG2iQIjvgUZd",
+        "kurum": "Karayolları Genel Müdürlüğü",
+        "karar_no": "10825",
+        "kategori": "Ulaşım",
+        "proje": "Of-Çaykara (DOKAP) Yolu Projesi (Km:17+760.00-25+763.00 Arası) Kapsamında Araziye Girilerek Yol Yapım Çalışmalarının Tamamlanması Amacıyla Bazı Taşınmazlar ile Üzerlerindeki Müştemilatın Karayolları Genel Müdürlüğü Tarafından Acele Kamulaştırılması Hakkında Karar",
+        "resmi_gazete": "33131",
+        "tarih": "08.01.2026",
+        "tahmini_konum": "Of",
+        "orijinal_coordinates": [
+          40.28,
+          40.94
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.00979143093159,
+          36.53402018497042
+        ]
+      },
+      "properties": {
+        "id": "-OooPJDZTEM7x87rnZJ4",
+        "kurum": "Kültür ve Turizm Bakanlığı",
+        "karar_no": "10826",
+        "kategori": "Diğer",
+        "proje": "Antalya Alanya Çenger Turizm Merkezi Sınırları İçerisinde Bulunan ve Kamulaştırma Bilgisi Belirtilen Özel Mülkiyete Konu Taşınmazın Turizme Yönelik Yatırım Yapılması Amacıyla Taşınmazın Kültür ve Turizm Bakanlığı Tarafından Acele Kamulaştırılması Hakkında Karar",
+        "resmi_gazete": "33131",
+        "tarih": "08.01.2026",
+        "tahmini_konum": "Alanya",
+        "orijinal_coordinates": [
+          31.9996,
+          36.5438
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          37.36893957137315,
+          37.07394832365614
+        ]
+      },
+      "properties": {
+        "id": "-OooPJEc_ndqdTnCtY_G",
+        "kurum": "Gaziantep Valiliği Yatırım İzleme ve Koordinasyon Başkanlığı",
+        "karar_no": "10827",
+        "kategori": "Ulaşım",
+        "proje": "Gaziantep İli, Oğuzeli İlçesi Sınırları İçinde Yer Alan Gaziantep Ayakkabı Terlik ve Yan Sanayi İhtisas Organize Sanayi Bölgesinin Altyapı İşlerinin Tamamlanması Amacıyla Mezkûr OSB’ye Ait İmar Planında Kısmen Sanayi Parseli, Yol, Teknik Altyapı, Park ve Yüzey Suyu Akış Bandı Kullanımında Kalan ve Kamulaştırma Bilgileri Belirtilen Taşınmazların, Gaziantep Valiliği Yatırım İzleme ve Koordinasyon Başkanlığı Tarafından Acele Kamulaştırılması Hakkında Karar",
+        "resmi_gazete": "33131",
+        "tarih": "08.01.2026",
+        "tahmini_konum": "Gaziantep",
+        "orijinal_coordinates": [
+          37.3783,
+          37.0662
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          34.65275457702223,
+          36.80407129413978
+        ]
+      },
+      "properties": {
+        "id": "-OooPJFicXkgja5RabU7",
+        "kurum": "Karayolları Genel Müdürlüğü",
+        "karar_no": "10828",
+        "kategori": "Ulaşım",
+        "proje": "Mezitli Devlet Hastanesi Bağlantı Yolu Projesi (Km:0+000-G:3+937.63/İ:2+382.24-2+400.22) Kapsamında Güzergâha Rastlayan Kesimde Araziye Girilerek Yol Yapım Çalışmalarının Tamamlanması Amacıyla İhtiyaç Duyulan Taşınmazlar ile Üzerlerindeki Müştemilatın Karayolları Genel Müdürlüğü Tarafından Acele Kamulaştırılması Hakkında Karar",
+        "resmi_gazete": "33131",
+        "tarih": "08.01.2026",
+        "tahmini_konum": "Mersin",
+        "orijinal_coordinates": [
+          34.6415,
+          36.8121
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          34.65015049369806,
+          36.82221264434615
+        ]
+      },
+      "properties": {
+        "id": "-OooPJGmoIWI2k50fQR2",
+        "kurum": "Karayolları Genel Müdürlüğü",
+        "karar_no": "10829",
+        "kategori": "Ulaşım",
+        "proje": "Mersin-Adana Devlet Yolu Projesi (Km:5+500-16+000 Arası) Kapsamında Güzergâha Rastlayan Kesimde Araziye Girilerek Yol Yapım Çalışmalarının Tamamlanması Amacıyla İhtiyaç Duyulan Taşınmazlar ile Üzerlerindeki Müştemilatın Karayolları Genel Müdürlüğü Tarafından Acele Kamulaştırılması Hakkında Karar",
+        "resmi_gazete": "33131",
+        "tarih": "08.01.2026",
+        "tahmini_konum": "Mersin",
+        "orijinal_coordinates": [
+          34.6415,
+          36.8121
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          41.95050389569836,
+          37.92196358232641
+        ]
+      },
+      "properties": {
+        "id": "-OooPJHqZLmP1UnN4ztb",
+        "kurum": "Karayolları Genel Müdürlüğü",
+        "karar_no": "10830",
+        "kategori": "Ulaşım",
+        "proje": "Siirt-Pervari İl Yolu Projesi (Km:3+280.00-19+814.95 Arası) Kapsamında Araziye Girilerek Yol Yapım Çalışmalarının Tamamlanması Amacıyla Güzergâhı, Bulundukları Yer ve Ada/Parsel Numaraları Gösterilen Taşınmazlar ile Üzerlerindeki Müştemilatın Karayolları Genel Müdürlüğü Tarafından Acele Kamulaştırılması Hakkında Karar",
+        "resmi_gazete": "33131",
+        "tarih": "08.01.2026",
+        "tahmini_konum": "Siirt",
+        "orijinal_coordinates": [
+          41.9402,
+          37.9304
+        ]
       }
     }
-    // Not: Dosya boyutu sınırlaması nedeniyle burada yalnızca ilk 2 örnek gösterilmiştir.
-    // Gerçek uygulamada, aşağıdaki gibi tüm veriyi (40+ madde) buraya eklemelisiniz.
-    // Alternatif: Veriyi ayrı bir data.js veya data.json dosyasından çekmek daha sağlıklı olur.
   ]
-};
-
-        // Haritayı başlat (Türkiye merkez)
-        var map = L.map('map').setView([39.0, 35.0], 6);
-
-        // Temel harita katmanı (OpenStreetMap)
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
-            subdomains: 'abcd',
-            maxZoom: 19,
-            minZoom: 6
-        }).addTo(map);
-
-        // Marker Cluster grubu oluştur (noktaları yakınlaşma seviyesine göre gruplar)
-        var markers = L.markerClusterGroup({
-            spiderfyOnMaxZoom: true,  // Tıklayınca yakın noktaları örümcek ağı gibi açar
-            showCoverageOnHover: false,
-            zoomToBoundsOnClick: true,
-            maxClusterRadius: 50     // Gruplama mesafesi (piksel)
-        });
-
-        // Toplam nokta sayısını tutmak için
-        let totalFeatures = kamulastirmaData.features.length;
-        document.getElementById('totalCount').innerText = totalFeatures;
-
-        // Her bir nokta için işaretleyici ve popup oluştur
-        kamulastirmaData.features.forEach(function(feature) {
-            var coords = feature.geometry.coordinates;
-            var props = feature.properties;
-            
-            // Popup içeriği (HTML)
-            var popupContent = `
-                <div class="custom-popup" style="min-width: 250px; max-width: 350px;">
-                    <div class="popup-title">📌 ${props.tahmini_konum || 'Konum belirsiz'}</div>
-                    <p><strong>🏛️ Kurum:</strong> ${props.kurum || '-'}</p>
-                    <p><strong>📄 Karar No:</strong> ${props.karar_no || '-'}</p>
-                    <p><strong>🗂️ Kategori:</strong> ${props.kategori || '-'}</p>
-                    <p><strong>📅 Tarih:</strong> ${props.tarih || '-'}</p>
-                    <p><strong>📰 Resmi Gazete:</strong> ${props.resmi_gazete || '-'}</p>
-                    <p><strong>📖 Proje:</strong> ${props.proje ? props.proje.substring(0, 100) + '...' : '-'}</p>
-                    <hr>
-                    <p style="font-size: 11px; color: gray;">ID: ${props.id || '-'}</p>
-                </div>
-            `;
-            
-            // İşaretleyici oluştur (varsayılan mavi marker)
-            var marker = L.marker([coords[1], coords[0]]);
-            marker.bindPopup(popupContent, { maxWidth: 400, minWidth: 250 });
-            markers.addLayer(marker);
-        });
-
-        // Cluster grubunu haritaya ekle
-        map.addLayer(markers);
-
-        // İsteğe bağlı: Haritaya ölçek çubuğu ekle
-        L.control.scale({ metric: true, imperial: false }).addTo(map);
-        
-        // Konsola bilgi yazdır
-        console.log(`${totalFeatures} adet kamulaştırma noktası haritaya yüklendi.`);
-    </script>
-</body>
-</html>
+}
