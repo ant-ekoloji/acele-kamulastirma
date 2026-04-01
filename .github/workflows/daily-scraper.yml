@@ -2,9 +2,8 @@ name: Günlük Kamulaştırma Verisi Güncelleme
 
 on:
   schedule:
-    # Her gün Türkiye saati ile 09:00'da çalışır (UTC 06:00)
     - cron: '0 6 * * *'
-  workflow_dispatch:  # Manuel çalıştırma için
+  workflow_dispatch:
 
 jobs:
   scrape-and-update:
@@ -20,12 +19,15 @@ jobs:
           node-version: '20'
       
       - name: Install dependencies
-        run: npm install axios cheerio firebase-admin
+        run: npm install axios cheerio firebase-admin nodemailer
       
       - name: Run scraper
         run: node scripts/daily-scraper.js
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          EMAIL_USER: ${{ secrets.EMAIL_USER }}
+          EMAIL_PASS: ${{ iabx agna ltsq wmkq }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
       
       - name: Commit and push updated GeoJSON
         run: |
