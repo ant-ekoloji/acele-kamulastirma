@@ -1,0 +1,36 @@
+name: Günlük Kamulaştırma Verisi Güncelleme
+
+on:
+  schedule:
+    # Her gün Türkiye saati ile 09:00'da çalışır (UTC 06:00)
+    - cron: '0 6 * * *'
+  workflow_dispatch:  # Manuel çalıştırma için
+
+jobs:
+  scrape-and-update:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install dependencies
+        run: npm install axios cheerio firebase-admin
+      
+      - name: Run scraper
+        run: node scripts/daily-scraper.js
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+      
+      - name: Commit and push updated GeoJSON
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add "2023-2026 Acele Kamulaştırma01.geojson"
+          git diff --quiet && git diff --staged --quiet || git commit -m "chore: günlük kamulaştırma verisi güncellemesi $(date +'%Y-%m-%d')"
+          git push
