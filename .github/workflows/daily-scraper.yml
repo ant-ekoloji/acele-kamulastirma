@@ -2,8 +2,9 @@ name: Günlük Kamulaştırma Verisi Güncelleme
 
 on:
   schedule:
+    # Her gün Türkiye saati ile 09:00'da çalışır (UTC 06:00)
     - cron: '0 6 * * *'
-  workflow_dispatch:
+  workflow_dispatch:  # Manuel çalıştırma için
 
 jobs:
   scrape-and-update:
@@ -21,15 +22,21 @@ jobs:
       - name: Install dependencies
         run: npm install axios cheerio firebase-admin nodemailer
       
+      - name: Create firebase-service-account.json
+        run: |
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > firebase-service-account.json
+        shell: bash
+      
       - name: Run scraper
         run: node scripts/daily-scraper.js
         env:
-          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          FIREBASE_SERVICE_ACCOUNT_PATH: ./firebase-service-account.json
           EMAIL_USER: ${{ secrets.EMAIL_USER }}
-          EMAIL_PASS: ${{ iabx agna ltsq wmkq }}
+          EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
           EMAIL_TO: ${{ secrets.EMAIL_TO }}
       
       - name: Commit and push updated GeoJSON
+        if: success()
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
