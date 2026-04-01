@@ -3,6 +3,7 @@ const cheerio = require('cheerio');
 const admin = require('firebase-admin');
 const fs = require('fs');
 const path = require('path');
+const nodemailer = require('nodemailer'); // Yeni eklendi
 
 // Firebase yapılandırması
 if (!admin.apps.length) {
@@ -59,13 +60,6 @@ function extractCity(locationText) {
   return locationText.split(/[\/,]/)[0].trim() || 'Belirtilmemiş';
 }
 
-function extractCoordinates(text) {
-  // Koordinat çıkarımı için regex (basit yaklaşım)
-  const coordPattern = /(\d{2,3})[°\s]*(\d{1,2})[°\s]*(\d{1,2})?[.,]?\s*([NSEW])/gi;
-  // Bu kısım daha detaylı geliştirilebilir
-  return null; // Şimdilik null döndür, Nominatim kullanılacak
-}
-
 async function fetchResmiGazetePage(date) {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -94,11 +88,11 @@ function extractKamulastirmaKararlari(html) {
   $('p, div, td').each((i, elem) => {
     const text = $(elem).text();
     if (text.includes('Acele Kamulaştırılması') || text.includes('ACELE KAMULAŞTIRMA')) {
-      // Karar numarasını çıkar (varsayılan format)
+      // Karar numarasını çıkar
       const kararNoMatch = text.match(/Karar Sayısı[:\s]*(\d+)/i);
       const tarihMatch = text.match(/(\d{1,2})[./](\d{1,2})[./](\d{4})/);
       
-      // Proje adını çıkar (karar başlığından)
+      // Proje adını çıkar
       let projeAdi = text.split('\n')[0].substring(0, 150);
       
       // Kategori belirleme
@@ -148,7 +142,7 @@ function extractKamulastirmaKararlari(html) {
         tahmini_konum: extractCity(konum),
         kamulastiran_kurum: kurum,
         resmi_gazete_sayisi: '',
-        coordinates: null, // Sonradan Nominatim ile eklenecek
+        coordinates: null,
         kategori: kategori,
         eklenme_tarihi: new Date().toISOString()
       });
@@ -187,9 +181,10 @@ async function geocodeLocation(location) {
 async function updateFirebase(kararlar) {
   let addedCount = 0;
   let skippedCount = 0;
+  const addedKararlar = []; // E-posta için eklenecek kararları tut
   
   for (const karar of kararlar) {
-    // Aynı karar numarası veya proje adı ile daha önce eklenmiş mi kontrol et
+    // Aynı karar numarası ile daha önce eklenmiş mi kontrol et
     const snapshot = await kamulastirmaRef.orderByChild('karar_sayisi').equalTo(karar.karar_sayisi).once('value');
     if (snapshot.exists()) {
       console.log(`Karar ${karar.karar_sayisi} zaten mevcut, atlanıyor`);
@@ -197,21 +192,21 @@ async function updateFirebase(kararlar) {
       continue;
     }
     
-    // Koordinat ekle (eğer yoksa)
+    // Koordinat ekle
     if (!karar.coordinates && karar.tahmini_konum !== 'Belirtilmemiş') {
       karar.coordinates = await geocodeLocation(karar.tahmini_konum);
-      // Rate limit için bekle
       await new Promise(resolve => setTimeout(resolve, 1100));
     }
     
     // Firebase'e ekle
-    await kamulastirmaRef.push(karar);
+    const newRef = await kamulastirmaRef.push(karar);
     addedCount++;
+    addedKararlar.push({ ...karar, id: newRef.key });
     console.log(`Yeni karar eklendi: ${karar.proje_adi.substring(0, 50)}...`);
   }
   
   console.log(`Güncelleme tamamlandı: ${addedCount} yeni eklendi, ${skippedCount} atlandı`);
-  return { addedCount, skippedCount };
+  return { addedCount, skippedCount, addedKararlar };
 }
 
 async function updateGeoJSONFile() {
@@ -259,8 +254,135 @@ async function updateGeoJSONFile() {
   console.log(`GeoJSON güncellendi: ${kamulastirmaList.length} kayıt`);
 }
 
+// ==================== E-POSTA BİLDİRİM FONKSİYONU ====================
+async function sendEmailNotification(addedCount, skippedCount, addedKararlar, totalRecords) {
+  // E-posta gönderimi için environment variable'ları kontrol et
+  const emailUser = process.env.EMAIL_USER;
+  const emailPass = process.env.EMAIL_PASS;
+  const emailTo = process.env.EMAIL_TO || emailUser; // Varsayılan olarak kendine gönder
+  
+  if (!emailUser || !emailPass) {
+    console.log('📧 E-posta bildirimi için EMAIL_USER veya EMAIL_PASS ayarlanmamış');
+    return;
+  }
+  
+  try {
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: emailUser,
+        pass: emailPass
+      }
+    });
+    
+    // Eklenecek kararlar için HTML tablosu oluştur
+    let kararlarHtml = '';
+    if (addedKararlar.length > 0) {
+      kararlarHtml = `
+        <h3>📋 Yeni Eklenen Kararlar (${addedKararlar.length} adet)</h3>
+        <table style="border-collapse: collapse; width: 100%; margin-top: 15px;">
+          <thead>
+            <tr>
+              <th style="border: 1px solid #ddd; padding: 8px; background-color: #f2f2f2; text-align: left;">Proje Adı</th>
+              <th style="border: 1px solid #ddd; padding: 8px; background-color: #f2f2f2; text-align: left;">Karar No</th>
+              <th style="border: 1px solid #ddd; padding: 8px; background-color: #f2f2f2; text-align: left;">Kategori</th>
+              <th style="border: 1px solid #ddd; padding: 8px; background-color: #f2f2f2; text-align: left;">Konum</th>
+              <th style="border: 1px solid #ddd; padding: 8px; background-color: #f2f2f2; text-align: left;">Tarih</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+      
+      addedKararlar.forEach(k => {
+        kararlarHtml += `
+          <tr>
+            <td style="border: 1px solid #ddd; padding: 8px;">${k.proje_adi.substring(0, 60)}${k.proje_adi.length > 60 ? '...' : ''}</td>
+            <td style="border: 1px solid #ddd; padding: 8px;">${k.karar_sayisi || '-'}</td>
+            <td style="border: 1px solid #ddd; padding: 8px;">${k.kategori}</td>
+            <td style="border: 1px solid #ddd; padding: 8px;">${k.tahmini_konum}</td>
+            <td style="border: 1px solid #ddd; padding: 8px;">${k.tarih || '-'}</td>
+          </tr>
+        `;
+      });
+      
+      kararlarHtml += `
+          </tbody>
+        </table>
+      `;
+    } else {
+      kararlarHtml = '<p style="color: #666;">📭 Bugün için yeni karar bulunamadı.</p>';
+    }
+    
+    const mailOptions = {
+      from: `"Acele Kamulaştırma Bot" <${emailUser}>`,
+      to: emailTo,
+      subject: `📢 Kamulaştırma Veri Güncellemesi - ${new Date().toLocaleDateString('tr-TR')}`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; padding: 20px; border-radius: 10px; text-align: center; }
+            .stats { background: #f5f7fb; padding: 15px; border-radius: 8px; margin: 20px 0; }
+            .stat-item { display: inline-block; margin: 0 20px; text-align: center; }
+            .stat-number { font-size: 28px; font-weight: bold; color: #2a5298; }
+            .stat-label { font-size: 12px; color: #666; margin-top: 5px; }
+            .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; font-size: 12px; color: #999; text-align: center; }
+            .button { display: inline-block; background: #2a5298; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-top: 15px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h2>🏛️ Acele Kamulaştırma Günlük Raporu</h2>
+              <p>${new Date().toLocaleString('tr-TR')}</p>
+            </div>
+            
+            <div class="stats">
+              <div class="stat-item">
+                <div class="stat-number">${addedCount}</div>
+                <div class="stat-label">Yeni Eklenen</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-number">${skippedCount}</div>
+                <div class="stat-label">Atlanan (Mevcut)</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-number">${totalRecords}</div>
+                <div class="stat-label">Toplam Kayıt</div>
+              </div>
+            </div>
+            
+            ${kararlarHtml}
+            
+            <div style="text-align: center;">
+              <a href="https://acele-kumulastirma.firebaseapp.com" class="button">🗺️ Web Uygulamasını Aç</a>
+              <a href="https://github.com/your-repo/acele-kamulastirma/actions" class="button" style="background: #8b5cf6;">🔄 İşlem Geçmişi</a>
+            </div>
+            
+            <div class="footer">
+              <p>Bu e-posta otomatik olarak gönderilmiştir. | Acele Kamulaştırma Takip Sistemi</p>
+              <p>Kaynak: Resmî Gazete • Güncelleme: ${new Date().toLocaleString('tr-TR')}</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `
+    };
+    
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`📧 E-posta gönderildi: ${info.messageId}`);
+    
+  } catch (error) {
+    console.error('❌ E-posta gönderim hatası:', error.message);
+  }
+}
+
+// ==================== ANA FONKSİYON ====================
 async function main() {
-  console.log('Günlük veri toplama başladı:', new Date().toISOString());
+  console.log('🚀 Günlük veri toplama başladı:', new Date().toISOString());
   
   // Son 7 günü tara
   const sonGunler = [];
@@ -279,7 +401,6 @@ async function main() {
       allKararlar.push(...kararlar);
       console.log(`${date.toISOString().split('T')[0]}: ${kararlar.length} karar bulundu`);
     }
-    // Rate limit için bekle
     await new Promise(resolve => setTimeout(resolve, 2000));
   }
   
@@ -296,12 +417,33 @@ async function main() {
   
   console.log(`${uniqueKararlar.length} tekil karar işlenecek`);
   
+  let addedCount = 0, skippedCount = 0, addedKararlar = [];
+  let totalRecords = 0;
+  
   if (uniqueKararlar.length > 0) {
-    const { addedCount, skippedCount } = await updateFirebase(uniqueKararlar);
+    const result = await updateFirebase(uniqueKararlar);
+    addedCount = result.addedCount;
+    skippedCount = result.skippedCount;
+    addedKararlar = result.addedKararlar;
+    
     await updateGeoJSONFile();
-    console.log(`İşlem tamamlandı. Eklendi: ${addedCount}, Atlanan: ${skippedCount}`);
+    
+    // Toplam kayıt sayısını al
+    const snapshot = await kamulastirmaRef.once('value');
+    totalRecords = snapshot.numChildren();
+    
+    console.log(`✅ İşlem tamamlandı. Eklendi: ${addedCount}, Atlanan: ${skippedCount}`);
+    
+    // ==================== E-POSTA BİLDİRİMİ ====================
+    await sendEmailNotification(addedCount, skippedCount, addedKararlar, totalRecords);
+    
   } else {
-    console.log('Yeni karar bulunamadı');
+    console.log('📭 Yeni karar bulunamadı');
+    
+    // Yeni karar bulunmasa da rapor gönder
+    const snapshot = await kamulastirmaRef.once('value');
+    totalRecords = snapshot.numChildren();
+    await sendEmailNotification(0, 0, [], totalRecords);
   }
 }
 
