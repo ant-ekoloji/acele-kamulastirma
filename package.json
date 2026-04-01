@@ -1,0 +1,14 @@
+{
+  "name": "acele-kamulastirma-scraper",
+  "version": "1.0.0",
+  "description": "Resmî Gazete'den acele kamulaştırma kararlarını çekip Firebase'e kaydeden bot",
+  "main": "scripts/daily-scraper.js",
+  "scripts": {
+    "scrape": "node scripts/daily-scraper.js"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "cheerio": "^1.0.0-rc.12",
+    "firebase-admin": "^11.11.0"
+  }
+}
