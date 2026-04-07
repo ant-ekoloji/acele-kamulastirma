@@ -893,7 +893,79 @@
         document.getElementById('deleteAllBtn').onclick = async () => { if(confirm("Tüm veriler silinsin mi?")) alert("Silme işlemi admin panelinde yapılabilir."); };
     }
     function previewFile(file) { const reader = new FileReader(); reader.onload = function(e) { document.getElementById('fileContentPreview').textContent = e.target.result.substring(0,500); document.getElementById('filePreview').style.display = 'block'; }; reader.readAsText(file); }
-    function processJsonFile(file) { alert("JSON ithalatı Firebase bağlantısı gerektirir."); }
+function processJsonFile(file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        let parsed;
+        try {
+            parsed = JSON.parse(e.target.result);
+        } catch(err) {
+            return alert("❌ Geçersiz JSON dosyası.");
+        }
+
+        // GeoJSON veya düz dizi formatını normalize et
+        let items = [];
+        if (Array.isArray(parsed)) {
+            items = parsed;
+        } else if (parsed.type === "FeatureCollection" && Array.isArray(parsed.features)) {
+            items = parsed.features.map(f => ({
+                proje_adi: f.properties.proje_adi,
+                karar_sayisi: f.properties.karar_sayisi,
+                tarih: f.properties.tarih,
+                tahmini_konum: f.properties.tahmini_konum || f.properties._konum || '',
+                kamulastiran_kurum: f.properties.kamulastiran_kurum,
+                resmi_gazete_sayisi: f.properties.resmi_gazete_sayisi,
+                coordinates: [f.geometry.coordinates[0], f.geometry.coordinates[1]],
+                kategori: f.properties.kategori
+            }));
+        } else {
+            return alert("❌ Desteklenmeyen format. JSON dizi veya GeoJSON FeatureCollection gereklidir.");
+        }
+
+        if (!items.length) return alert("⚠️ Dosyada hiç kayıt bulunamadı.");
+
+        // Zorunlu alan kontrolü
+        const eksik = items.filter(i => !i.proje_adi || !i.coordinates || !i.kategori || !i.tahmini_konum);
+        if (eksik.length) {
+            if (!confirm(`⚠️ ${eksik.length} kayıtta zorunlu alan eksik (proje_adi, coordinates, kategori, tahmini_konum). Yine de devam edilsin mi?`)) return;
+        }
+
+        if (database) {
+            // Firebase'e yaz
+            let yuklenen = 0;
+            items.forEach(item => {
+                database.push({
+                    proje_adi: item.proje_adi || "İsimsiz",
+                    karar_sayisi: item.karar_sayisi || "Belirtilmemiş",
+                    tarih: item.tarih || "",
+                    tahmini_konum: item.tahmini_konum || "",
+                    kamulastiran_kurum: item.kamulastiran_kurum || "",
+                    resmi_gazete_sayisi: item.resmi_gazete_sayisi || "",
+                    coordinates: item.coordinates,
+                    kategori: kategoriDonustur(item.kategori),
+                    eklenme_tarihi: new Date().toISOString()
+                }).then(() => {
+                    yuklenen++;
+                    if (yuklenen === items.length) {
+                        alert(`✅ ${yuklenen} kayıt Firebase'e yüklendi.`);
+                        closeFileModal();
+                    }
+                }).catch(err => console.error("Firebase yazma hatası:", err));
+            });
+        } else {
+            // Firebase yoksa yerel veri olarak yükle
+            const normalized = items.map(item => ({
+                ...item,
+                kategori: kategoriDonustur(item.kategori)
+            }));
+            kamulastirmaData = [...kamulastirmaData, ...normalized];
+            updateView();
+            alert(`✅ ${normalized.length} kayıt yerel olarak yüklendi. (Firebase bağlantısı olmadığından sayfa yenilenince kaybolur.)`);
+            closeFileModal();
+        }
+    };
+    reader.readAsText(file);
+}
     function closeFileModal() { document.getElementById('fileModal').style.display = 'none'; }
     window.closeFileModal = closeFileModal;
     function closeGeojsonModal() { document.getElementById('geojsonModal').style.display = 'none'; }
