@@ -816,23 +816,31 @@
     }
 
     async function tryLoadLocalJson() {
-        if (database) return;
-        try {
-            const res = await fetch('2023-2026 Acele Kamulaştırma01.geojson');
-            if (!res.ok) throw new Error('Dosya bulunamadı');
-            const data = await res.json();
-            if (data.type === "FeatureCollection" && Array.isArray(data.features)) {
-                kamulastirmaData = data.features.map(f => ({
-                    proje_adi: f.properties.proje_adi,
-                    karar_sayisi: f.properties.karar_sayisi,
-                    tarih: f.properties.tarih,
-                    tahmini_konum: f.properties.tahmini_konum || f.properties._konum || '',
-                    kamulastiran_kurum: f.properties.kamulastiran_kurum,
-                    resmi_gazete_sayisi: f.properties.resmi_gazete_sayisi,
-                    coordinates: [f.geometry.coordinates[0], f.geometry.coordinates[1]],
-                    kategori: kategoriDonustur(f.properties.kategori)
-                }));
-            }
+       if (database) {
+    const promises = items.map(item => 
+        database.push({
+            proje_adi: item.proje_adi || "İsimsiz",
+            karar_sayisi: item.karar_sayisi || "Belirtilmemiş",
+            tarih: item.tarih || "",
+            tahmini_konum: item.tahmini_konum || "",
+            kamulastiran_kurum: item.kamulastiran_kurum || "",
+            resmi_gazete_sayisi: item.resmi_gazete_sayisi || "",
+            coordinates: item.coordinates || [35.0, 39.0],
+            kategori: kategoriDonustur(item.kategori),
+            eklenme_tarihi: new Date().toISOString()
+        }).catch(err => {
+            console.warn("Firebase yazma hatası (atlandı):", err);
+            return null; // hata olsa da Promise.all devam etsin
+        })
+    );
+
+    Promise.all(promises).then(results => {
+        const basarili = results.filter(r => r !== null).length;
+        const basarisiz = results.length - basarili;
+        closeFileModal();
+        alert(`✅ ${basarili} kayıt yüklendi.${basarisiz ? `\n⚠️ ${basarisiz} kayıt yazılamadı (eksik alan).` : ''}`);
+    });
+}
             updateView();
         } catch(e) { console.warn("Yerel JSON yüklenemedi:", e); updateView(); }
     }
