@@ -903,7 +903,7 @@
     function previewFile(file) { const reader = new FileReader(); reader.onload = function(e) { document.getElementById('fileContentPreview').textContent = e.target.result.substring(0,500); document.getElementById('filePreview').style.display = 'block'; }; reader.readAsText(file); }
 function processJsonFile(file) {
     const reader = new FileReader();
-    reader.onload = function(e) {
+    reader.onload = async function(e) {
         let parsed;
         try {
             parsed = JSON.parse(e.target.result);
@@ -911,7 +911,6 @@ function processJsonFile(file) {
             return alert("❌ Geçersiz JSON dosyası.");
         }
 
-        // GeoJSON veya düz dizi formatını normalize et
         let items = [];
         if (Array.isArray(parsed)) {
             items = parsed;
@@ -927,48 +926,48 @@ function processJsonFile(file) {
                 kategori: f.properties.kategori
             }));
         } else {
-            return alert("❌ Desteklenmeyen format. JSON dizi veya GeoJSON FeatureCollection gereklidir.");
+            return alert("❌ Desteklenmeyen format.");
         }
 
         if (!items.length) return alert("⚠️ Dosyada hiç kayıt bulunamadı.");
 
-        // Zorunlu alan kontrolü
         const eksik = items.filter(i => !i.proje_adi || !i.coordinates || !i.kategori || !i.tahmini_konum);
         if (eksik.length) {
-            if (!confirm(`⚠️ ${eksik.length} kayıtta zorunlu alan eksik (proje_adi, coordinates, kategori, tahmini_konum). Yine de devam edilsin mi?`)) return;
+            if (!confirm(`⚠️ ${eksik.length} kayıtta zorunlu alan eksik. Yine de devam edilsin mi?`)) return;
         }
 
         if (database) {
-            // Firebase'e yaz
-            let yuklenen = 0;
-            items.forEach(item => {
-                database.push({
-                    proje_adi: item.proje_adi || "İsimsiz",
-                    karar_sayisi: item.karar_sayisi || "Belirtilmemiş",
-                    tarih: item.tarih || "",
-                    tahmini_konum: item.tahmini_konum || "",
-                    kamulastiran_kurum: item.kamulastiran_kurum || "",
-                    resmi_gazete_sayisi: item.resmi_gazete_sayisi || "",
-                    coordinates: item.coordinates,
-                    kategori: kategoriDonustur(item.kategori),
-                    eklenme_tarihi: new Date().toISOString()
-                }).then(() => {
-                    yuklenen++;
-                    if (yuklenen === items.length) {
-                        alert(`✅ ${yuklenen} kayıt Firebase'e yüklendi.`);
-                        closeFileModal();
-                    }
-                }).catch(err => console.error("Firebase yazma hatası:", err));
-            });
+            let basarili = 0, basarisiz = 0;
+            for (const item of items) {
+                try {
+                    await database.push({
+                        proje_adi: item.proje_adi || "İsimsiz",
+                        karar_sayisi: item.karar_sayisi || "Belirtilmemiş",
+                        tarih: item.tarih || "",
+                        tahmini_konum: item.tahmini_konum || "Belirtilmemiş",
+                        kamulastiran_kurum: item.kamulastiran_kurum || "",
+                        resmi_gazete_sayisi: item.resmi_gazete_sayisi || "",
+                        coordinates: item.coordinates || [35.0, 39.0],
+                        kategori: kategoriDonustur(item.kategori),
+                        eklenme_tarihi: new Date().toISOString()
+                    });
+                    basarili++;
+                } catch(err) {
+                    console.warn("Atlandı:", item.proje_adi, err);
+                    basarisiz++;
+                }
+            }
+            closeFileModal();
+            alert(`✅ ${basarili} kayıt yüklendi.${basarisiz ? `\n⚠️ ${basarisiz} kayıt yazılamadı.` : ''}`);
         } else {
-            // Firebase yoksa yerel veri olarak yükle
             const normalized = items.map(item => ({
                 ...item,
+                tahmini_konum: item.tahmini_konum || "Belirtilmemiş",
                 kategori: kategoriDonustur(item.kategori)
             }));
             kamulastirmaData = [...kamulastirmaData, ...normalized];
             updateView();
-            alert(`✅ ${normalized.length} kayıt yerel olarak yüklendi. (Firebase bağlantısı olmadığından sayfa yenilenince kaybolur.)`);
+            alert(`✅ ${normalized.length} kayıt yerel olarak yüklendi.`);
             closeFileModal();
         }
     };
