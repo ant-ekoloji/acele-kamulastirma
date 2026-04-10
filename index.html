@@ -335,7 +335,10 @@
             ${item.resmi_gazete_sayisi ? `<div class="popup-info"><i class="fas fa-newspaper"></i><span>RG: ${item.resmi_gazete_sayisi}</span></div>` : ''}
             <div class="popup-info"><i class="fas fa-map-marker-alt"></i><span>${item.tahmini_konum || '?'}</span></div>
             <div class="popup-info"><i class="fas fa-tag"></i><span>${item.kategori}</span></div>
-            <div class="popup-link"><a href="${rgLink}" target="_blank"><i class="fas fa-external-link-alt"></i> Resmî Gazete</a></div>
+            <div class="popup-link" style="display:flex;justify-content:space-between;align-items:center;">
+            <a href="${rgLink}" target="_blank"><i class="fas fa-external-link-alt"></i> Resmî Gazete</a>
+            ${isAdminMode ? `<button onclick="editRecord('${(item.id||'').replace(/'/g,"\\'")}',event)" style="background:#f59e0b;color:white;border:none;padding:3px 8px;border-radius:6px;font-size:10px;cursor:pointer;"><i class="fas fa-edit"></i> Düzenle</button>` : ''}
+            </div><i class="fas fa-external-link-alt"></i> Resmî Gazete</a></div>
         </div>`;
     }
 
@@ -501,6 +504,15 @@
     function setupAdminPanel() {
         document.getElementById('loginBtn').onclick = () => {
             const pwd = prompt("Admin şifresi:");
+            // Haritaya tıklayarak konum seçme
+map.on('click', function(e) {
+    if (!isAdminMode) return;
+    const { lat, lng } = e.latlng;
+    document.getElementById('coordsInput').value = JSON.stringify([lng, lat]);
+    drawnItems.clearLayers();
+    L.marker([lat, lng]).addTo(drawnItems);
+    document.getElementById('sehirInput').focus();
+});
             if (pwd === "Smtppl5862") {
                 isAdminMode = true;
                 document.getElementById('adminControls').classList.remove('hidden');
@@ -523,6 +535,26 @@
             const sehir = document.getElementById('sehirInput').value.trim();
             const coords = document.getElementById('coordsInput').value;
             if (!proje || !sehir || !coords) return alert("Proje adı, il ve koordinat girin!");
+            // Güncelleme modu kontrolü
+const editId = document.getElementById('saveBtn').dataset.editId;
+if (editId) {
+    await database.child(editId).update({
+        proje_adi: proje,
+        karar_sayisi: document.getElementById('kararNo').value.trim() || "Belirtilmemiş",
+        tarih: document.getElementById('kararTarihi').value || "",
+        tahmini_konum: sehir,
+        kamulastiran_kurum: document.getElementById('kurumInput').value.trim() || "",
+        resmi_gazete_sayisi: document.getElementById('rgSayisi').value.trim() || "",
+        coordinates: JSON.parse(coords),
+        kategori: document.getElementById('kategoriSelect').value,
+    });
+    alert("✅ Güncellendi!");
+    document.getElementById('saveBtn').innerHTML = '<i class="fas fa-save"></i> KAYDET';
+    delete document.getElementById('saveBtn').dataset.editId;
+    ['projeAdi','kararNo','kararTarihi','kurumInput','rgSayisi','sehirInput','coordsInput'].forEach(id => document.getElementById(id).value = '');
+    drawnItems.clearLayers();
+    return;
+}
             await database.push({
                 proje_adi: proje,
                 karar_sayisi: document.getElementById('kararNo').value.trim() || "Belirtilmemiş",
@@ -626,6 +658,35 @@
     window.closeFileModal = closeFileModal;
     function closeGeojsonModal() { document.getElementById('geojsonModal').style.display = 'none'; }
     window.closeGeojsonModal = closeGeojsonModal;
+    window.editRecord = function(id, event) {
+    event.stopPropagation();
+    if (!isAdminMode) return;
+    const item = kamulastirmaData.find(r => r.id === id);
+    if (!item) return;
+    // Formu doldur
+    document.getElementById('projeAdi').value = item.proje_adi || '';
+    document.getElementById('kararNo').value = item.karar_sayisi || '';
+    document.getElementById('kararTarihi').value = item.tarih || '';
+    document.getElementById('kurumInput').value = item.kamulastiran_kurum || '';
+    document.getElementById('rgSayisi').value = item.resmi_gazete_sayisi || '';
+    document.getElementById('sehirInput').value = item.tahmini_konum || '';
+    document.getElementById('coordsInput').value = JSON.stringify(item.coordinates);
+    document.getElementById('kategoriSelect').value = item.kategori;
+    // Kaydet butonunu güncelle moduna al
+    const saveBtn = document.getElementById('saveBtn');
+    saveBtn.innerHTML = '<i class="fas fa-save"></i> GÜNCELLE';
+    saveBtn.dataset.editId = id;
+    // Sidebar'a scroll
+    document.getElementById('adminControls').scrollIntoView({ behavior: 'smooth' });
+    // Haritada işaretle
+    if (item.coordinates) {
+        const lat = Array.isArray(item.coordinates[0]) ? L.latLngBounds(item.coordinates).getCenter().lat : item.coordinates[1];
+        const lng = Array.isArray(item.coordinates[0]) ? L.latLngBounds(item.coordinates).getCenter().lng : item.coordinates[0];
+        drawnItems.clearLayers();
+        L.marker([lat, lng]).addTo(drawnItems);
+        map.setView([lat, lng], 13);
+    }
+};
 
     // ==================== BAŞLATICI ====================
     document.addEventListener('DOMContentLoaded', () => {
