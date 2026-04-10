@@ -72,7 +72,10 @@ async function fetchResmiGazetePage(date) {
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
   const url = `https://www.resmigazete.gov.tr/eskiler/${year}/${month}/${year}${month}${day}.htm`;
-  
+  if (html) {
+  console.log(`HTML uzunluğu: ${html.length} karakter`);
+  console.log(`'Acele' geçiyor mu: ${html.includes('Acele')}`);
+  const kararlar = extractKamulastirmaKararlari(html);
   try {
     const response = await axios.get(url, {
       headers: {
