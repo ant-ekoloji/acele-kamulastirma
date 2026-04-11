@@ -72,10 +72,7 @@ async function fetchResmiGazetePage(date) {
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
   const url = `https://www.resmigazete.gov.tr/eskiler/${year}/${month}/${year}${month}${day}.htm`;
-  if (html) {
-  console.log(`HTML uzunluğu: ${html.length} karakter`);
-  console.log(`'Acele' geçiyor mu: ${html.includes('Acele')}`);
-  const kararlar = extractKamulastirmaKararlari(html);
+  
   try {
     const response = await axios.get(url, {
       headers: {
@@ -275,11 +272,11 @@ async function sendEmailNotification(addedCount, skippedCount, addedKararlar, to
     
     let kararlarHtml = '';
     if (addedKararlar.length > 0) {
-      kararlarHtml = `<h3>📋 Yeni Eklenen Kararlar (${addedKararlar.length} adet)</h3><table style="border-collapse: collapse; width: 100%;"><thead><tr><th>Proje Adı</th><th>Karar No</th><th>Kategori</th><th>Konum</th></tr></thead><tbody>`;
+      kararlarHtml = `<h3>📋 Yeni Eklenen Kararlar (${addedKararlar.length} adet)</h3><table border="1" cellpadding="5"><tr><th>Proje Adı</th><th>Karar No</th><th>Kategori</th><th>Konum</th></tr>`;
       addedKararlar.forEach(k => {
         kararlarHtml += `<tr><td>${k.proje_adi.substring(0, 60)}</td><td>${k.karar_sayisi || '-'}</td><td>${k.kategori}</td><td>${k.tahmini_konum}</td></tr>`;
       });
-      kararlarHtml += `</tbody></table>`;
+      kararlarHtml += `</table>`;
     } else {
       kararlarHtml = '<p>📭 Bugün için yeni karar bulunamadı.</p>';
     }
