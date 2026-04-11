@@ -31,9 +31,9 @@ jobs:
         run: node scripts/daily-scraper.js
         env:
           FIREBASE_SERVICE_ACCOUNT_PATH: ./firebase-service-account.json
-          EMAIL_USER: ${{ secrets.EMAIL_USER }}
-          EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
-          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          EMAIL_USER: ${{ ipapila@gmail.com }}
+          EMAIL_PASS: ${{ 07Smtppl21!! }}
+          EMAIL_TO: ${{ ipapila@gmail.com }}
       
       - name: Commit and push updated GeoJSON
         if: success()
